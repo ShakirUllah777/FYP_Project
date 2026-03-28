@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-7">
+
+    <!-- AI Suggestion Box -->
+    <div class="card border-0 mb-4"
+         style="background: linear-gradient(135deg, #1a3c5e, #2e75b6); border-radius:12px;">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span style="font-size:1.3rem;">🤖</span>
+          <h6 class="text-white fw-bold mb-0">AI Title & Description Suggester</h6>
+          <span class="badge bg-warning text-dark ms-1" style="font-size:0.65rem;">BETA</span>
+        </div>
+        <p class="text-white mb-3" style="opacity:0.8; font-size:0.88rem;">
+          Type a few keywords about your project and let AI write the title and description for you.
+        </p>
+        <div class="d-flex gap-2">
+          <input type="text"
+                 id="ai-keywords"
+                 class="form-control"
+                 placeholder="e.g. machine learning, healthcare, prediction..."
+                 style="border-radius:8px;">
+          <button onclick="getAISuggestion()"
+                  id="ai-btn"
+                  class="btn btn-warning fw-bold px-4"
+                  style="white-space:nowrap; border-radius:8px;">
+            ✨ Suggest
+          </button>
+        </div>
+        <div id="ai-loading"
+             class="text-white mt-2"
+             style="display:none; font-size:0.85rem; opacity:0.8;">
+          ⏳ Generating suggestion...
+        </div>
+        <div id="ai-success"
+             class="mt-2"
+             style="display:none;">
+          <span class="badge bg-success">✅ Title and description filled!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post Form -->
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h3 class="text-primary mb-4">
+          {% if editing %}Edit Post{% else %}Add New Post{% endif %}
+        </h3>
+        <form method="POST">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Title</label>
+            {{ form.title }}
+            {{ form.title.errors }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Type</label>
+            {{ form.post_type }}
+            {{ form.post_type.errors }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Description</label>
+            {{ form.description }}
+            {{ form.description.errors }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Skills Required</label>
+            <div class="border rounded p-3" style="max-height:200px; overflow-y:auto;">
+              {{ form.skills_required }}
+            </div>
+            {{ form.skills_required.errors }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Deadline (optional)</label>
+            {{ form.deadline }}
+            {{ form.deadline.errors }}
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            {% if editing %}Update Post{% else %}Create Post{% endif %}
+          </button>
+          <a href="{% url 'tasks' %}"
+             class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+async function getAISuggestion() {
+  const keywords = document.getElementById('ai-keywords').value.trim();
+  if (!keywords) {
+    alert('Please type some keywords first!');
+    return;
+  }
+
+  // Show loading
+  document.getElementById('ai-loading').style.display = 'block';
+  document.getElementById('ai-success').style.display = 'none';
+  document.getElementById('ai-btn').disabled = true;
+  document.getElementById('ai-btn').innerText  = '⏳ Working...';
+
+  try {
+    const res = await fetch("{% url 'ai_suggest' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ keywords: keywords })
+    });
+
+    const data = await res.json();
+
+    // Fill the form fields
+    document.getElementById('id_title').value       = data.title;
+    document.getElementById('id_description').value = data.description;
+
+    // Show success
+    document.getElementById('ai-loading').style.display = 'none';
+    document.getElementById('ai-success').style.display = 'block';
+
+  } catch (err) {
+    alert('Something went wrong. Please try again.');
+    document.getElementById('ai-loading').style.display = 'none';
+  }
+
+  // Reset button
+  document.getElementById('ai-btn').disabled    = false;
+  document.getElementById('ai-btn').innerText   = '✨ Suggest';
+}
+
+function getCookie(name) {
+  let value = null;
+  if (document.cookie) {
+    document.cookie.split(';').forEach(c => {
+      c = c.trim();
+      if (c.startsWith(name + '='))
+        value = decodeURIComponent(c.slice(name.length + 1));
+    });
+  }
+  return value;
+}
+</script>
+
+{% endblock %}

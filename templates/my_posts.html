@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="text-primary mb-0">My Posts</h3>
+  <a href="{% url 'add_post' %}" class="btn btn-primary btn-sm">+ Add Post</a>
+</div>
+
+{% if posts %}
+  {% for post in posts %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="fw-bold mb-1">{{ post.title }}</h5>
+          <p class="text-muted mb-2">{{ post.description|truncatechars:150 }}</p>
+
+          {% if post.skills_required.all %}
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              {% for skill in post.skills_required.all %}
+                <span class="badge bg-light text-dark border">{{ skill.name }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <small class="text-muted">
+            {{ post.created_at|timesince }} ago
+            {% if post.deadline %} · Deadline: {{ post.deadline }}{% endif %}
+          </small>
+        </div>
+        <div class="ms-3 d-flex flex-column gap-2">
+          {% if post.post_type == 'fyp' %}
+            <span class="badge bg-primary">FYP</span>
+          {% else %}
+            <span class="badge bg-success">Paid Task</span>
+          {% endif %}
+          <a href="{% url 'edit_post' post.pk %}"
+             class="btn btn-outline-primary btn-sm">Edit</a>
+          <form method="POST" action="{% url 'delete_post' post.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                    onclick="return confirm('Delete this post?')">
+              Delete
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <h5>You have no posts yet.</h5>
+    <a href="{% url 'add_post' %}" class="btn btn-primary mt-2">Create your first post</a>
+  </div>
+{% endif %}
+
+{% endblock %}

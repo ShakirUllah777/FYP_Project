@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h3 class="text-primary mb-4">Add / Edit Skills</h3>
+        <form method="POST">
+          {% csrf_token %}
+
+          <div class="accordion" id="skillsAccordion">
+            {% for cat_code, cat_name in categories %}
+            <div class="accordion-item mb-2">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed fw-bold" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#cat_{{ cat_code }}">
+                  {{ cat_name }}
+                </button>
+              </h2>
+              <div id="cat_{{ cat_code }}" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  {% for skill in all_skills %}
+                    {% if skill.category == cat_code %}
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                      <input type="checkbox"
+                             class="form-check-input"
+                             name="skills"
+                             value="{{ skill.id }}"
+                             id="skill_{{ skill.id }}"
+                             {% if skill.id in user_skill_ids %}checked{% endif %}
+                             onchange="toggleProf({{ skill.id }})">
+                      <label class="form-check-label" for="skill_{{ skill.id }}">
+                        {{ skill.name }}
+                      </label>
+                      <select name="proficiency_{{ skill.id }}"
+                              id="prof_{{ skill.id }}"
+                              class="form-select form-select-sm w-auto"
+                              style="display:{% if skill.id in user_skill_ids %}inline-block{% else %}none{% endif %}">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 mt-4">Save Skills</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleProf(skillId) {
+  const checkbox = document.getElementById('skill_' + skillId);
+  const select   = document.getElementById('prof_'  + skillId);
+  select.style.display = checkbox.checked ? 'inline-block' : 'none';
+}
+</script>
+{% endblock %}
