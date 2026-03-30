@@ -18,4 +18,5 @@ urlpatterns = [
     path('messages/send/',              views.send_message, name='send_message'),
     path('messages/<str:username>/',    views.chat,         name='chat'),
     path('api/ai-suggest/', views.ai_suggest, name='ai_suggest'),
+    path('api/chatbot/', views.chatbot, name='chatbot'),
 ]
