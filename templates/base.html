@@ -1,369 +1,176 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>CollabSpace</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand fw-bold" href="{% url 'home' %}">CollabSpace</a>
-        <div class="ms-auto d-flex gap-2">
-          {% if user.is_authenticated %}
-          <a href="{% url 'tasks' %}" class="btn btn-outline-light btn-sm"
-            >Tasks</a
-          >
-          <a href="{% url 'add_post' %}" class="btn btn-outline-light btn-sm"
-            >Add Post</a
-          >
-          <a href="{% url 'my_posts' %}" class="btn btn-outline-light btn-sm"
-            >My Posts</a
-          >
-          <a href="{% url 'my_profile' %}" class="btn btn-outline-light btn-sm"
-            >Profile</a
-          >
-          <a href="{% url 'inbox' %}" class="btn btn-outline-light btn-sm">
-            Messages {% if unread_count > 0 %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CollabSpace</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">CollabSpace</a>
+    <div class="ms-auto d-flex gap-2">
+      {% if user.is_authenticated %}
+        <a href="{% url 'tasks' %}"      class="btn btn-outline-light btn-sm">Tasks</a>
+        <a href="{% url 'seniors' %}"    class="btn btn-outline-light btn-sm">Seniors</a>
+        <a href="{% url 'add_post' %}"   class="btn btn-outline-light btn-sm">Add Post</a>
+        <a href="{% url 'my_posts' %}"   class="btn btn-outline-light btn-sm">My Posts</a>
+        <a href="{% url 'my_profile' %}" class="btn btn-outline-light btn-sm">Profile</a>
+        <a href="{% url 'inbox' %}"      class="btn btn-outline-light btn-sm">
+          Messages
+          {% if unread_count > 0 %}
             <span class="badge bg-danger">{{ unread_count }}</span>
-            {% endif %}
-          </a>
-          <a href="{% url 'logout' %}" class="btn btn-light btn-sm">Logout</a>
-          {% else %}
-          <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm"
-            >Login</a
-          >
-          <a href="{% url 'register' %}" class="btn btn-light btn-sm"
-            >Register</a
-          >
           {% endif %}
-        </div>
-      </div>
-    </nav>
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-light btn-sm">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}"    class="btn btn-outline-light btn-sm">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-light btn-sm">Register</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
 
-    <div class="container mt-4">
-      {% if messages %} {% for msg in messages %}
-      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show">
+<div class="container mt-4">
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" id="auto-alert">
         {{ msg }}
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="alert"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
-      {% endfor %} {% endif %} {% block content %}{% endblock %}
+    {% endfor %}
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  setTimeout(function () {
+    document.querySelectorAll('#auto-alert').forEach(function (alert) {
+      alert.classList.remove('show');
+      setTimeout(() => alert.remove(), 300);
+    });
+  }, 3000);
+</script>
+
+{% if user.is_authenticated %}
+<style>
+  #cs-bubble { position:fixed; bottom:28px; right:28px; width:56px; height:56px; background:#2e75b6; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 20px rgba(46,117,182,0.5); z-index:9999; transition:transform 0.2s; border:none; }
+  #cs-bubble:hover { transform:scale(1.1); }
+  #cs-bubble span { font-size:1.5rem; }
+  #cs-window { position:fixed; bottom:100px; right:28px; width:340px; background:#fff; border-radius:16px; box-shadow:0 8px 40px rgba(0,0,0,0.18); z-index:9998; display:none; flex-direction:column; overflow:hidden; }
+  #cs-header { background:linear-gradient(135deg,#1a3c5e,#2e75b6); padding:14px 16px; display:flex; align-items:center; justify-content:space-between; }
+  #cs-header .cs-title { color:#fff; font-weight:600; font-size:0.95rem; }
+  #cs-close { background:none; border:none; color:rgba(255,255,255,0.8); font-size:1.2rem; cursor:pointer; }
+  #cs-close:hover { color:#fff; }
+  #cs-messages { height:300px; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; background:#f8faff; }
+  .cs-msg { max-width:82%; padding:10px 14px; border-radius:12px; font-size:0.875rem; line-height:1.5; white-space:pre-line; }
+  .cs-msg.bot { background:#fff; border:1px solid #e0e8f5; color:#333; align-self:flex-start; border-bottom-left-radius:4px; }
+  .cs-msg.user { background:#2e75b6; color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+  #cs-typing { background:#fff; border:1px solid #e0e8f5; color:#999; align-self:flex-start; padding:10px 14px; border-radius:12px; font-size:0.875rem; display:none; margin:0 14px 8px; }
+  #cs-input-row { display:flex; gap:8px; padding:12px; border-top:1px solid #e8eef7; background:#fff; }
+  #cs-input { flex:1; border:1px solid #dce6f5; border-radius:8px; padding:8px 12px; font-size:0.875rem; outline:none; }
+  #cs-input:focus { border-color:#2e75b6; }
+  #cs-send { background:#2e75b6; color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:0.875rem; cursor:pointer; }
+  #cs-send:hover { background:#1a5a99; }
+  .cs-quick-btns { display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 10px; background:#f8faff; }
+  .cs-quick { background:#e8f0fe; color:#2e75b6; border:none; border-radius:20px; padding:4px 12px; font-size:0.78rem; cursor:pointer; }
+  .cs-quick:hover { background:#c5d9f5; }
+</style>
+
+<button id="cs-bubble" onclick="toggleChat()" title="Ask CollabSpace Assistant">
+  <span id="cs-bubble-icon">💬</span>
+</button>
+
+<div id="cs-window">
+  <div id="cs-header">
+    <div class="cs-title">🤖 CollabSpace Assistant</div>
+    <button id="cs-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div id="cs-messages">
+    <div class="cs-msg bot">
+      👋 Hi <strong>{{ request.user.first_name }}</strong>!
+      Ask me anything about how to use CollabSpace!
     </div>
+  </div>
+  <div class="cs-quick-btns">
+    <button class="cs-quick" onclick="askQuick('How to post?')">How to post?</button>
+    <button class="cs-quick" onclick="askQuick('How to message?')">How to message?</button>
+    <button class="cs-quick" onclick="askQuick('How to add skills?')">Add skills?</button>
+    <button class="cs-quick" onclick="askQuick('Is it free?')">Is it free?</button>
+  </div>
+  <div id="cs-typing">● ● ●</div>
+  <div id="cs-input-row">
+    <input type="text" id="cs-input" placeholder="Ask a question..."
+           onkeydown="if(event.key==='Enter') sendChat()">
+    <button id="cs-send" onclick="sendChat()">Send</button>
+  </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const csWindow = document.getElementById('cs-window');
+const csMsgs   = document.getElementById('cs-messages');
+const csTyping = document.getElementById('cs-typing');
+const csIcon   = document.getElementById('cs-bubble-icon');
 
-    <!-- ── CHATBOT BUBBLE ── -->
-    {% if user.is_authenticated %}
-    <style>
-      #cs-bubble {
-        position: fixed;
-        bottom: 28px;
-        right: 28px;
-        width: 56px;
-        height: 56px;
-        background: #2e75b6;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(46, 117, 182, 0.5);
-        z-index: 9999;
-        transition: transform 0.2s;
-        border: none;
-      }
-      #cs-bubble:hover {
-        transform: scale(1.1);
-      }
-      #cs-bubble span {
-        font-size: 1.5rem;
-      }
+function toggleChat() {
+  const open = csWindow.style.display === 'flex';
+  csWindow.style.display = open ? 'none' : 'flex';
+  csIcon.innerText = open ? '💬' : '✕';
+}
+function addMsg(text, type) {
+  const div = document.createElement('div');
+  div.className = 'cs-msg ' + type;
+  div.innerText  = text;
+  csMsgs.appendChild(div);
+  csMsgs.scrollTop = csMsgs.scrollHeight;
+}
+function askQuick(q) {
+  document.getElementById('cs-input').value = q;
+  sendChat();
+}
+async function sendChat() {
+  const input = document.getElementById('cs-input');
+  const q     = input.value.trim();
+  if (!q) return;
+  addMsg(q, 'user');
+  input.value = '';
+  csTyping.style.display = 'block';
+  csMsgs.scrollTop = csMsgs.scrollHeight;
+  try {
+    const res  = await fetch("{% url 'chatbot' %}", {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ question: q })
+    });
+    const data = await res.json();
+    csTyping.style.display = 'none';
+    addMsg(data.reply, 'bot');
+  } catch(e) {
+    csTyping.style.display = 'none';
+    addMsg('Sorry, something went wrong.', 'bot');
+  }
+}
+function getCookie(name) {
+  let value = null;
+  if (document.cookie) {
+    document.cookie.split(';').forEach(c => {
+      c = c.trim();
+      if (c.startsWith(name + '='))
+        value = decodeURIComponent(c.slice(name.length + 1));
+    });
+  }
+  return value;
+}
+</script>
+{% endif %}
 
-      #cs-window {
-        position: fixed;
-        bottom: 100px;
-        right: 28px;
-        width: 340px;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
-        z-index: 9998;
-        display: none;
-        flex-direction: column;
-        overflow: hidden;
-        animation: csSlideUp 0.25s ease;
-      }
-      @keyframes csSlideUp {
-        from {
-          opacity: 0;
-          transform: translateY(16px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      #cs-header {
-        background: linear-gradient(135deg, #1a3c5e, #2e75b6);
-        padding: 14px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      #cs-header .cs-title {
-        color: #fff;
-        font-weight: 600;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      #cs-close {
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 1.2rem;
-        cursor: pointer;
-        line-height: 1;
-      }
-      #cs-close:hover {
-        color: #fff;
-      }
-
-      #cs-messages {
-        height: 300px;
-        overflow-y: auto;
-        padding: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        background: #f8faff;
-      }
-
-      .cs-msg {
-        max-width: 82%;
-        padding: 10px 14px;
-        border-radius: 12px;
-        font-size: 0.875rem;
-        line-height: 1.5;
-        white-space: pre-line;
-      }
-      .cs-msg.bot {
-        background: #fff;
-        border: 1px solid #e0e8f5;
-        color: #333;
-        align-self: flex-start;
-        border-bottom-left-radius: 4px;
-      }
-      .cs-msg.user {
-        background: #2e75b6;
-        color: #fff;
-        align-self: flex-end;
-        border-bottom-right-radius: 4px;
-      }
-      .cs-typing {
-        background: #fff;
-        border: 1px solid #e0e8f5;
-        color: #999;
-        align-self: flex-start;
-        padding: 10px 14px;
-        border-radius: 12px;
-        border-bottom-left-radius: 4px;
-        font-size: 0.875rem;
-        display: none;
-      }
-
-      #cs-input-row {
-        display: flex;
-        gap: 8px;
-        padding: 12px;
-        border-top: 1px solid #e8eef7;
-        background: #fff;
-      }
-      #cs-input {
-        flex: 1;
-        border: 1px solid #dce6f5;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 0.875rem;
-        outline: none;
-      }
-      #cs-input:focus {
-        border-color: #2e75b6;
-      }
-      #cs-send {
-        background: #2e75b6;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 14px;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      #cs-send:hover {
-        background: #1a5a99;
-      }
-
-      .cs-quick-btns {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        padding: 0 14px 10px;
-        background: #f8faff;
-      }
-      .cs-quick {
-        background: #e8f0fe;
-        color: #2e75b6;
-        border: none;
-        border-radius: 20px;
-        padding: 4px 12px;
-        font-size: 0.78rem;
-        cursor: pointer;
-        transition: background 0.15s;
-      }
-      .cs-quick:hover {
-        background: #c5d9f5;
-      }
-    </style>
-
-    <!-- Bubble button -->
-    <button
-      id="cs-bubble"
-      onclick="toggleChat()"
-      title="Ask CollabSpace Assistant"
-    >
-      <span id="cs-bubble-icon">💬</span>
-    </button>
-
-    <!-- Chat window -->
-    <div id="cs-window">
-      <!-- Header -->
-      <div id="cs-header">
-        <div class="cs-title">🤖 CollabSpace Assistant</div>
-        <button id="cs-close" onclick="toggleChat()">✕</button>
-      </div>
-
-      <!-- Messages -->
-      <div id="cs-messages">
-        <div class="cs-msg bot">
-          👋 Hi <strong>{{ request.user.first_name }}</strong>! I am your
-          CollabSpace assistant. Ask me anything about how to use the platform!
-        </div>
-      </div>
-
-      <!-- Quick questions -->
-      <div class="cs-quick-btns">
-        <button class="cs-quick" onclick="askQuick('How to post?')">
-          How to post?
-        </button>
-        <button class="cs-quick" onclick="askQuick('How to message?')">
-          How to message?
-        </button>
-        <button class="cs-quick" onclick="askQuick('How to add skills?')">
-          Add skills?
-        </button>
-        <button class="cs-quick" onclick="askQuick('Is it free?')">
-          Is it free?
-        </button>
-      </div>
-
-      <!-- Typing indicator -->
-      <div id="cs-typing" class="cs-typing" style="margin: 0 14px 8px">
-        ● ● ●
-      </div>
-
-      <!-- Input -->
-      <div id="cs-input-row">
-        <input
-          type="text"
-          id="cs-input"
-          placeholder="Ask a question..."
-          onkeydown="if (event.key === 'Enter') sendChat();"
-        />
-        <button id="cs-send" onclick="sendChat()">Send</button>
-      </div>
-    </div>
-
-    <script>
-      const csWindow = document.getElementById("cs-window");
-      const csMsgs = document.getElementById("cs-messages");
-      const csTyping = document.getElementById("cs-typing");
-      const csIcon = document.getElementById("cs-bubble-icon");
-
-      function toggleChat() {
-        const open = csWindow.style.display === "flex";
-        csWindow.style.display = open ? "none" : "flex";
-        csIcon.innerText = open ? "💬" : "✕";
-      }
-
-      function addMsg(text, type) {
-        const div = document.createElement("div");
-        div.className = "cs-msg " + type;
-        div.innerText = text;
-        csMsgs.appendChild(div);
-        csMsgs.scrollTop = csMsgs.scrollHeight;
-      }
-
-      function askQuick(q) {
-        document.getElementById("cs-input").value = q;
-        sendChat();
-      }
-
-      async function sendChat() {
-        const input = document.getElementById("cs-input");
-        const q = input.value.trim();
-        if (!q) return;
-
-        addMsg(q, "user");
-        input.value = "";
-
-        // Show typing
-        csTyping.style.display = "block";
-        csMsgs.scrollTop = csMsgs.scrollHeight;
-
-        try {
-          const res = await fetch("{% url 'chatbot' %}", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify({ question: q }),
-          });
-          const data = await res.json();
-
-          // Hide typing, show reply
-          csTyping.style.display = "none";
-          addMsg(data.reply, "bot");
-        } catch (e) {
-          csTyping.style.display = "none";
-          addMsg("Sorry, something went wrong. Please try again.", "bot");
-        }
-      }
-
-      function getCookie(name) {
-        let value = null;
-        if (document.cookie) {
-          document.cookie.split(";").forEach((c) => {
-            c = c.trim();
-            if (c.startsWith(name + "="))
-              value = decodeURIComponent(c.slice(name.length + 1));
-          });
-        }
-        return value;
-      }
-    </script>
-    {% endif %}
-    <!-- ── END CHATBOT ── -->
-  </body>
+</body>
 </html>

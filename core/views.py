@@ -219,7 +219,9 @@ def send_message(request):
         if content:
             receiver = get_object_or_404(User, username=receiver_username)
             Message.objects.create(
-                sender=request.user, receiver=receiver, content=content
+                sender=request.user,
+                receiver=receiver,
+                content=content
             )
         return redirect('chat', username=receiver_username)
     return redirect('inbox')
@@ -305,6 +307,40 @@ def ai_suggest(request):
     # parse response...
     '''
 
+@login_required
+def seniors(request):
+    search   = request.GET.get('search', '').strip()
+    semester = request.GET.get('semester', '').strip()
+
+    seniors_qs = Profile.objects.filter(
+        semester__in=[6, 7, 8]
+    ).exclude(
+        user=request.user
+    ).select_related('user')
+
+    # Search by name or username
+    if search:
+        seniors_qs = seniors_qs.filter(
+            user__first_name__icontains=search
+        ) | seniors_qs.filter(
+            user__last_name__icontains=search
+        ) | seniors_qs.filter(
+            user__username__icontains=search
+        )
+
+    # Filter by semester
+    if semester:
+        seniors_qs = seniors_qs.filter(semester=semester)
+
+    seniors_qs = seniors_qs[:10]
+
+    return render(request, 'seniors.html', {
+        'seniors':  seniors_qs,
+        'search':   search,
+        'semester': semester,
+    })
+
+
 
 @login_required
 def chatbot(request):
@@ -384,3 +420,5 @@ def chatbot(request):
         )
         reply = message.content[0].text
     '''
+
+
