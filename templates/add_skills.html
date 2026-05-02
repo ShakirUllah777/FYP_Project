@@ -4,10 +4,102 @@
 <div class="row justify-content-center">
   <div class="col-md-8">
     <div class="card shadow-sm">
-      <div class="card-body p-4">
-        <h3 class="text-primary mb-4">Add / Edit Skills</h3>
-        <form method="POST">
+      <div class="card-body p-5">
+        <h3 class="fw-bold text-dark mb-4 border-bottom pb-3" style="font-size: 1.5rem;">Edit Profile & Skills</h3>
+        <form method="POST" enctype="multipart/form-data">
           {% csrf_token %}
+
+          <h5 class="mb-3 border-bottom pb-2">Basic Profile</h5>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">First Name</label>
+              <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Last Name</label>
+              <input type="text" name="last_name" class="form-control" value="{{ request.user.last_name }}" required>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Department</label>
+              <select name="department" class="form-select">
+                <option value="">-- Select --</option>
+                {% for code, name in departments %}
+                <option value="{{ code }}" {% if profile.department == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Program</label>
+              <select name="program" class="form-select">
+                <option value="">-- Select --</option>
+                {% for code, name in programs %}
+                <option value="{{ code }}" {% if profile.program == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Semester</label>
+              <select name="semester" class="form-select">
+                <option value="">-- Select --</option>
+                {% for code, name in semesters %}
+                <option value="{{ code }}" {% if profile.semester == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Bio</label>
+            <textarea name="bio" class="form-control" rows="2">{{ profile.bio|default:"" }}</textarea>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">GitHub URL (optional)</label>
+              <input type="url" name="github" class="form-control" value="{{ profile.github|default:"" }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">LinkedIn URL (optional)</label>
+              <input type="url" name="linkedin" class="form-control" value="{{ profile.linkedin|default:"" }}">
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Looking For</label>
+              <select name="looking_for" class="form-select">
+                <option value="">-- Select --</option>
+                {% for code, name in looking_fors %}
+                <option value="{{ code }}" {% if profile.looking_for == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Availability</label>
+              <select name="availability" class="form-select">
+                <option value="">-- Select --</option>
+                {% for code, name in availabilities %}
+                <option value="{{ code }}" {% if profile.availability == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="form-label">Profile Photo</label>
+            {% if profile.photo %}
+              <div class="mb-2">
+                <img src="{{ profile.photo.url }}" alt="Current Photo" class="rounded-circle shadow-sm" width="60" height="60" style="object-fit: cover;">
+              </div>
+            {% endif %}
+            <input type="file" name="photo" class="form-control" accept="image/*">
+          </div>
+
+          <h5 class="mb-3 border-bottom pb-2 mt-5">Your Skills</h5>
+
 
           <div class="accordion" id="skillsAccordion">
             {% for cat_code, cat_name in categories %}
@@ -51,7 +143,7 @@
             {% endfor %}
           </div>
 
-          <button type="submit" class="btn btn-primary w-100 mt-4">Save Skills</button>
+          <button type="submit" class="btn btn-primary w-100 mt-4 rounded-pill fw-medium py-2">Save Profile & Skills</button>
         </form>
       </div>
     </div>

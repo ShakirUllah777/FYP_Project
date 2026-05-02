@@ -10,15 +10,15 @@ class Profile(models.Model):
     AVAILABILITY       = [('5','<5 hrs/week'),('5-10','5–10 hrs/week'),('10-20','10–20 hrs/week'),('20+','20+ hrs/week')]
 
     user         = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    department   = models.CharField(max_length=10, choices=DEPARTMENT_CHOICES, default='IT')
-    program      = models.CharField(max_length=10, choices=PROGRAM_CHOICES)
-    semester     = models.IntegerField(choices=SEMESTER_CHOICES)
+    department   = models.CharField(max_length=10, choices=DEPARTMENT_CHOICES, default='IT', blank=True, null=True)
+    program      = models.CharField(max_length=10, choices=PROGRAM_CHOICES, blank=True, null=True)
+    semester     = models.IntegerField(choices=SEMESTER_CHOICES, blank=True, null=True)
     photo        = models.ImageField(upload_to='profiles/', blank=True, null=True)
     bio          = models.CharField(max_length=200, blank=True)
     github       = models.URLField(blank=True)
     linkedin     = models.URLField(blank=True)
-    looking_for  = models.CharField(max_length=10, choices=LOOKING_FOR)
-    availability = models.CharField(max_length=10, choices=AVAILABILITY)
+    looking_for  = models.CharField(max_length=10, choices=LOOKING_FOR, blank=True, null=True)
+    availability = models.CharField(max_length=10, choices=AVAILABILITY, blank=True, null=True)
     created_at   = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -88,3 +88,15 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender.username} → {self.receiver.username}"
+
+
+class Block(models.Model):
+    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocking')
+    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+
+    def __str__(self):
+        return f"{self.blocker.username} blocked {self.blocked.username}"

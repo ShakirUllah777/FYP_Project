@@ -3,42 +3,195 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CollabSpace</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet" />
+  <title>CollabSpace Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
+<style>
+  :root {
+    --sidebar-bg: #111827;
+    --sidebar-hover: #1f2937;
+    --sidebar-text: #9ca3af;
+    --sidebar-text-active: #ffffff;
+    --brand-accent: #facc15;
+    --primary-blue: #2563eb;
+    --bg-light: #f8fafc;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-light);
+    color: #1f2937;
+  }
+
+  .card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    background-color: #ffffff;
+  }
+
+  .btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  #sidebar {
+    height: 100vh;
+    width: 260px;
+    position: fixed;
+    top: 0;
+    left: -260px;
+    background-color: var(--sidebar-bg);
+    color: white;
+    transition: left 0.3s ease-in-out;
+    z-index: 1050;
+    padding-top: 20px;
+  }
+  #sidebar.open {
+    left: 0;
+  }
+  
+  #sidebar .sidebar-brand {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: left;
+    padding: 0 20px;
+    margin-bottom: 30px;
+    color: var(--sidebar-text-active);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  #sidebar .sidebar-brand .logo-icon {
+    background: var(--brand-accent);
+    color: var(--sidebar-bg);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  #sidebar a {
+    padding: 12px 16px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--sidebar-text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.2s;
+    margin: 4px 16px;
+    border-radius: 8px;
+  }
+  
+  #sidebar a:hover, #sidebar a.active {
+    background-color: var(--sidebar-hover);
+    color: var(--sidebar-text-active);
+  }
+  
+  #main-content {
+    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  @media (min-width: 768px) {
+    #sidebar { left: 0; }
+    #sidebar.closed { left: -260px; }
+    #main-content {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+    }
+    #main-content.expanded { margin-left: 0; width: 100%; }
+  }
+  
+  .top-navbar {
+    background-color: var(--sidebar-bg);
+    color: white;
+    padding: 12px 24px;
+  }
+  
+  .top-navbar .btn-logout {
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 6px 16px;
+    border-radius: 6px;
+    background: transparent;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+  }
+  .top-navbar .btn-logout:hover {
+    background: #ef4444;
+    color: white;
+  }
+</style>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="{% url 'home' %}">CollabSpace</a>
-    <div class="ms-auto d-flex gap-2">
-      {% if user.is_authenticated %}
-        <a href="{% url 'tasks' %}"      class="btn btn-outline-light btn-sm">Tasks</a>
-        <a href="{% url 'seniors' %}"    class="btn btn-outline-light btn-sm">Seniors</a>
-        <a href="{% url 'add_post' %}"   class="btn btn-outline-light btn-sm">Add Post</a>
-        <a href="{% url 'my_posts' %}"   class="btn btn-outline-light btn-sm">My Posts</a>
-        <a href="{% url 'my_profile' %}" class="btn btn-outline-light btn-sm">Profile</a>
-        <a href="{% url 'inbox' %}"      class="btn btn-outline-light btn-sm">
-          Messages
-          {% if unread_count > 0 %}
-            <span class="badge bg-danger">{{ unread_count }}</span>
-          {% endif %}
-        </a>
-        <a href="{% url 'logout' %}" class="btn btn-light btn-sm">Logout</a>
-      {% else %}
-        <a href="{% url 'login' %}"    class="btn btn-outline-light btn-sm">Login</a>
-        <a href="{% url 'register' %}" class="btn btn-light btn-sm">Register</a>
-      {% endif %}
+{% if user.is_authenticated %}
+  <div id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon">CS</div>
+      CollabSpace
     </div>
+    <a href="{% url 'tasks' %}"><i class="bi bi-grid-1x2-fill"></i> Tasks Feed</a>
+    <a href="{% url 'seniors' %}"><i class="bi bi-people-fill"></i> Seniors</a>
+    <a href="#" data-bs-toggle="modal" data-bs-target="#addPostModal"><i class="bi bi-plus-square-fill"></i> Add Post</a>
+    <a href="{% url 'my_posts' %}"><i class="bi bi-file-earmark-text-fill"></i> My Posts</a>
+    <a href="{% url 'my_profile' %}"><i class="bi bi-person-fill"></i> Profile</a>
+    <a href="{% url 'inbox' %}"><i class="bi bi-chat-dots-fill"></i> Messages 
+      {% if unread_count > 0 %}
+        <span class="badge bg-danger ms-auto">{{ unread_count }}</span>
+      {% endif %}
+    </a>
   </div>
-</nav>
 
-<div class="container mt-4">
+  <div id="main-content">
+    <nav class="d-flex align-items-center top-navbar shadow-sm mb-4">
+      <button class="btn btn-link text-white p-0 me-4 text-decoration-none" id="sidebarToggle" style="font-size: 1.5rem;">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="ms-auto d-flex align-items-center gap-4">
+        <span class="fw-medium text-white" style="font-size: 0.95rem;">
+          {{ request.user.first_name }} {{ request.user.last_name }}
+        </span>
+        <a href="{% url 'logout' %}" class="btn-logout">LOGOUT</a>
+      </div>
+    </nav>
+    <div class="container-fluid px-4">
+{% else %}
+  <nav class="navbar navbar-expand-lg top-navbar shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-white d-flex align-items-center gap-2" href="{% url 'home' %}">
+        <div style="background:var(--brand-accent);color:var(--sidebar-bg);border-radius:6px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:1rem;">CS</div>
+        CollabSpace
+      </a>
+      <div class="ms-auto d-flex gap-3">
+        <a href="{% url 'login' %}" class="text-white text-decoration-none fw-medium d-flex align-items-center">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-sm px-3 rounded-pill fw-medium">Register</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container mt-5">
+{% endif %}
 
   {% if messages %}
     {% for msg in messages %}
-      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" id="auto-alert">
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show rounded-3 shadow-sm border-0" id="auto-alert">
         {{ msg }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
@@ -47,7 +200,28 @@
 
   {% block content %}{% endblock %}
 
-</div>
+{% if user.is_authenticated %}
+    </div> <!-- end container-fluid -->
+  </div> <!-- end main-content -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+
+      sidebarToggle.addEventListener('click', function() {
+        if (window.innerWidth >= 768) {
+          sidebar.classList.toggle('closed');
+          mainContent.classList.toggle('expanded');
+        } else {
+          sidebar.classList.toggle('open');
+        }
+      });
+    });
+  </script>
+{% else %}
+  </div> <!-- end container -->
+{% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -171,6 +345,124 @@ function getCookie(name) {
 }
 </script>
 {% endif %}
+
+{% if user.is_authenticated and global_post_form %}
+<div class="modal fade" id="addPostModal" tabindex="-1" aria-labelledby="addPostModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold" id="addPostModalLabel" style="font-size: 1.25rem;">Create a New Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <!-- AI Suggestion Box -->
+        <div class="card border-0 mb-2" style="background: linear-gradient(135deg, #1a3c5e, #2e75b6); border-radius:10px;">
+          <div class="card-body p-2">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span style="font-size:1rem;">🤖</span>
+              <h6 class="text-white fw-bold mb-0" style="font-size:0.85rem;">AI Suggester</h6>
+              <span class="badge bg-warning text-dark ms-1" style="font-size:0.55rem;">BETA</span>
+            </div>
+            <div class="d-flex gap-2">
+              <input type="text" id="ai-keywords" class="form-control form-control-sm" placeholder="Keywords (e.g. AI, web)..." style="border-radius:6px;">
+              <button type="button" onclick="getAISuggestion()" id="ai-btn" class="btn btn-warning btn-sm fw-bold px-2" style="white-space:nowrap; border-radius:6px; font-size:0.75rem;">
+                ✨ Suggest
+              </button>
+            </div>
+            <div id="ai-loading" class="text-white mt-1" style="display:none; font-size:0.7rem; opacity:0.8;">⏳ Working...</div>
+            <div id="ai-success" class="mt-1" style="display:none;"><span class="badge bg-success" style="font-size:0.65rem;">✅ Filled!</span></div>
+          </div>
+        </div>
+        <form method="POST" action="{% url 'add_post' %}">
+          {% csrf_token %}
+          <div class="row gx-2">
+            <div class="col-md-6 mb-2">
+              <label class="form-label fw-medium text-dark small mb-0">Title</label>
+              {{ global_post_form.title }}
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label fw-medium text-dark small mb-0">Type</label>
+              {{ global_post_form.post_type }}
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label fw-medium text-dark small mb-0">Description</label>
+            {{ global_post_form.description }}
+          </div>
+          <div class="row gx-2">
+            <div class="col-md-7 mb-2">
+              <label class="form-label fw-medium text-dark small mb-0">Skills Required</label>
+              {{ global_post_form.skills_required }}
+            </div>
+            <div class="col-md-5 mb-2">
+              <label class="form-label fw-medium text-dark small mb-0">Deadline</label>
+              {{ global_post_form.deadline }}
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 rounded-pill fw-medium py-1 mt-1">Publish Post</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('.select2').select2({
+      dropdownParent: $('#addPostModal'),
+      width: '100%',
+      placeholder: 'Search for skills...'
+    });
+  });
+</script>
+
+<script>
+async function getAISuggestion() {
+  const keywords = document.getElementById('ai-keywords').value.trim();
+  if (!keywords) {
+    alert('Please type some keywords first!');
+    return;
+  }
+
+  // Show loading
+  document.getElementById('ai-loading').style.display = 'block';
+  document.getElementById('ai-success').style.display = 'none';
+  document.getElementById('ai-btn').disabled = true;
+  document.getElementById('ai-btn').innerText  = '⏳ Working...';
+
+  try {
+    const res = await fetch("{% url 'ai_suggest' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}' // Use Django template tag for CSRF
+      },
+      body: JSON.stringify({ keywords: keywords })
+    });
+
+    const data = await res.json();
+
+    // Fill the form fields
+    document.getElementById('id_title').value       = data.title;
+    document.getElementById('id_description').value = data.description;
+
+    // Show success
+    document.getElementById('ai-loading').style.display = 'none';
+    document.getElementById('ai-success').style.display = 'block';
+
+  } catch (err) {
+    alert('Something went wrong. Please try again.');
+    document.getElementById('ai-loading').style.display = 'none';
+  }
+
+  // Reset button
+  document.getElementById('ai-btn').disabled    = false;
+  document.getElementById('ai-btn').innerText   = '✨ Suggest';
+}
+</script>
 
 </body>
 </html>

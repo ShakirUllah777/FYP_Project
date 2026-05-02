@@ -3,10 +3,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import RegisterForm
-from .models import Profile, Skill, UserSkill, Post, Message
-from .forms import RegisterForm, PostForm
+from .models import Profile, Skill, UserSkill, Post, Message, Block
+from .forms import PostForm
 import json
+import re
+from django.db.models import Q
 from django.http import JsonResponse
 
 
@@ -17,15 +18,50 @@ def home(request):
 def register(request):
     if request.user.is_authenticated:
         return redirect('tasks')
+        
     if request.method == 'POST':
-        form = RegisterForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Account created! Please login.')
-            return redirect('login')
-    else:
-        form = RegisterForm()
-    return render(request, 'register.html', {'form': form})
+        first_name = request.POST.get('first_name', '').strip()
+        last_name  = request.POST.get('last_name', '').strip()
+        email      = request.POST.get('email', '').strip()
+        password   = request.POST.get('password', '')
+        confirm    = request.POST.get('confirm_password', '')
+
+        if not (first_name and last_name and email and password and confirm):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'register.html')
+            
+        if password != confirm:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'register.html')
+            
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'This email is already registered.')
+            return render(request, 'register.html')
+
+        if len(password) < 8 or not re.search(r'[A-Za-z]', password) or not re.search(r'\d', password) or not re.search(r'[\W_]', password):
+            messages.error(request, 'Password must be at least 8 characters long and contain letters, numbers, and symbols.')
+            return render(request, 'register.html')
+
+        base_username = f"{first_name.lower()}_{last_name.lower()}"
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}_{counter}"
+            counter += 1
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name
+        )
+        Profile.objects.create(user=user)
+
+        messages.success(request, 'Account created successfully! Please login.')
+        return redirect('login')
+
+    return render(request, 'register.html')
 
 
 def login_view(request):
@@ -91,8 +127,32 @@ def add_skills(request):
     user_skills = UserSkill.objects.filter(user=request.user)
     user_skill_ids = list(user_skills.values_list('skill_id', flat=True))
     user_skill_prof = {us.skill_id: us.proficiency for us in user_skills}
+    
+    profile = request.user.profile
 
     if request.method == 'POST':
+        request.user.first_name = request.POST.get('first_name', request.user.first_name)
+        request.user.last_name = request.POST.get('last_name', request.user.last_name)
+        request.user.save()
+
+        profile.department = request.POST.get('department')
+        profile.program = request.POST.get('program')
+        
+        sem = request.POST.get('semester')
+        if sem and sem.isdigit():
+            profile.semester = int(sem)
+            
+        profile.bio = request.POST.get('bio', '')
+        profile.github = request.POST.get('github', '')
+        profile.linkedin = request.POST.get('linkedin', '')
+        profile.looking_for = request.POST.get('looking_for')
+        profile.availability = request.POST.get('availability')
+
+        if 'photo' in request.FILES:
+            profile.photo = request.FILES['photo']
+            
+        profile.save()
+
         UserSkill.objects.filter(user=request.user).delete()
         skill_ids = request.POST.getlist('skills')
         for sid in skill_ids:
@@ -101,7 +161,7 @@ def add_skills(request):
             UserSkill.objects.create(
                 user=request.user, skill=skill, proficiency=proficiency
             )
-        messages.success(request, 'Skills updated!')
+        messages.success(request, 'Profile and skills updated!')
         return redirect('my_profile')
 
     return render(request, 'add_skills.html', {
@@ -109,6 +169,12 @@ def add_skills(request):
         'all_skills':      all_skills,
         'user_skill_ids':  user_skill_ids,
         'user_skill_prof': user_skill_prof,
+        'profile':         profile,
+        'departments':     Profile.DEPARTMENT_CHOICES,
+        'programs':        Profile.PROGRAM_CHOICES,
+        'semesters':       Profile.SEMESTER_CHOICES,
+        'looking_fors':    Profile.LOOKING_FOR,
+        'availabilities':  Profile.AVAILABILITY,
     })
 
 
@@ -123,7 +189,11 @@ def add_post(request):
             post.save()
             form.save_m2m()
             messages.success(request, 'Post created successfully!')
-            return redirect('tasks')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.capitalize()}: {error}")
+        return redirect(request.META.get('HTTP_REFERER', 'tasks'))
     else:
         form = PostForm()
     return render(request, 'add_post.html', {'form': form, 'editing': False})
@@ -194,6 +264,9 @@ def inbox(request):
 def chat(request, username):
     other_user = get_object_or_404(User, username=username)
 
+    is_blocked = Block.objects.filter(blocker=request.user, blocked=other_user).exists()
+    has_blocked_me = Block.objects.filter(blocker=other_user, blocked=request.user).exists()
+
     # Mark messages as read
     Message.objects.filter(
         sender=other_user, receiver=request.user, is_read=False
@@ -208,6 +281,8 @@ def chat(request, username):
         'other_user':    other_user,
         'messages':      messages_qs,
         'other_profile': other_user.profile,
+        'is_blocked':    is_blocked,
+        'has_blocked_me': has_blocked_me,
     })
 
 
@@ -218,6 +293,14 @@ def send_message(request):
         content           = request.POST.get('content', '').strip()
         if content:
             receiver = get_object_or_404(User, username=receiver_username)
+            
+            is_blocked = Block.objects.filter(blocker=request.user, blocked=receiver).exists()
+            has_blocked_me = Block.objects.filter(blocker=receiver, blocked=request.user).exists()
+            
+            if is_blocked or has_blocked_me:
+                messages.error(request, 'Cannot send message. A block is in place.')
+                return redirect('chat', username=receiver_username)
+
             Message.objects.create(
                 sender=request.user,
                 receiver=receiver,
@@ -225,6 +308,19 @@ def send_message(request):
             )
         return redirect('chat', username=receiver_username)
     return redirect('inbox')
+
+@login_required
+def toggle_block(request, username):
+    if request.method == 'POST':
+        other_user = get_object_or_404(User, username=username)
+        block_obj = Block.objects.filter(blocker=request.user, blocked=other_user).first()
+        if block_obj:
+            block_obj.delete()
+            messages.success(request, f'You have unblocked {other_user.username}.')
+        else:
+            Block.objects.create(blocker=request.user, blocked=other_user)
+            messages.success(request, f'You have blocked {other_user.username}.')
+    return redirect('chat', username=username)
 
 
 @login_required
@@ -321,11 +417,9 @@ def seniors(request):
     # Search by name or username
     if search:
         seniors_qs = seniors_qs.filter(
-            user__first_name__icontains=search
-        ) | seniors_qs.filter(
-            user__last_name__icontains=search
-        ) | seniors_qs.filter(
-            user__username__icontains=search
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search) |
+            Q(user__username__icontains=search)
         )
 
     # Filter by semester

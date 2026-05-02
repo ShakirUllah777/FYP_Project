@@ -1,103 +1,105 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-7">
+  <div class="col-md-5">
     <div class="card shadow-sm">
-      <div class="card-body p-4">
-        <h3 class="mb-4 text-primary">Create Account</h3>
-        <form method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
+      <div class="card-body p-5">
+        <h3 class="mb-4 fw-bold text-dark text-center" style="font-size: 1.8rem;">Create Account</h3>
+        
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
 
+        <form method="POST">
+          {% csrf_token %}
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">First Name</label>
-              {{ form.first_name }}
-              {{ form.first_name.errors }}
+              <input type="text" name="first_name" class="form-control" required>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Last Name</label>
-              {{ form.last_name }}
-              {{ form.last_name.errors }}
+              <input type="text" name="last_name" class="form-control" required>
             </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Username</label>
-            {{ form.username }}
-            {{ form.username.errors }}
           </div>
 
           <div class="mb-3">
             <label class="form-label">Email</label>
-            {{ form.email }}
-            {{ form.email.errors }}
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Password</label>
-              {{ form.password1 }}
-              {{ form.password1.errors }}
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Confirm Password</label>
-              {{ form.password2 }}
-              {{ form.password2.errors }}
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4 mb-3">
-              <label class="form-label">Department</label>
-              {{ form.department }}
-            </div>
-            <div class="col-md-4 mb-3">
-              <label class="form-label">Program</label>
-              {{ form.program }}
-            </div>
-            <div class="col-md-4 mb-3">
-              <label class="form-label">Semester</label>
-              {{ form.semester }}
-            </div>
+            <input type="email" name="email" class="form-control" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Profile Photo</label>
-            {{ form.photo }}
+            <label class="form-label">Password</label>
+            <input type="password" name="password" id="id_password" class="form-control" 
+                   pattern="(?=.*\d)(?=.*[a-zA-Z])(?=.*[\W_]).{8,}"
+                   title="Must contain at least one number, one letter, one special character, and at least 8 or more characters" required>
+            <div class="progress mt-2" style="height: 6px;">
+              <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small id="password-strength-text" class="text-muted mt-1 d-block">Password strength</small>
+          </div>
+          
+          <div class="mb-4">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" name="confirm_password" class="form-control" required>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label">Bio</label>
-            {{ form.bio }}
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">GitHub (optional)</label>
-              {{ form.github }}
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">LinkedIn (optional)</label>
-              {{ form.linkedin }}
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Looking For</label>
-              {{ form.looking_for }}
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Availability</label>
-              {{ form.availability }}
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100">Register</button>
+          <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-medium mt-3">Register</button>
           <p class="text-center mt-3">Already have an account? <a href="{% url 'login' %}">Login</a></p>
         </form>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('id_password');
+    const strengthBar = document.getElementById('password-strength-bar');
+    const strengthText = document.getElementById('password-strength-text');
+
+    passwordInput.addEventListener('input', function() {
+      const val = passwordInput.value;
+      let score = 0;
+      
+      if (!val) {
+        strengthBar.style.width = '0%';
+        strengthBar.className = 'progress-bar';
+        strengthText.textContent = 'Password strength';
+        strengthText.className = 'text-muted mt-1 d-block';
+        return;
+      }
+
+      if (val.length >= 8) score += 25;
+      if (/[A-Za-z]/.test(val)) score += 25;
+      if (/\d/.test(val)) score += 25;
+      if (/[\W_]/.test(val)) score += 25;
+
+      strengthBar.style.width = score + '%';
+      
+      if (score <= 25) {
+        strengthBar.className = 'progress-bar bg-danger';
+        strengthText.textContent = 'Weak (add letters/numbers/symbols)';
+        strengthText.className = 'text-danger mt-1 d-block fw-bold';
+      } else if (score <= 50) {
+        strengthBar.className = 'progress-bar bg-warning';
+        strengthText.textContent = 'Fair (keep adding)';
+        strengthText.className = 'text-warning mt-1 d-block fw-bold';
+      } else if (score <= 75) {
+        strengthBar.className = 'progress-bar bg-info';
+        strengthText.textContent = 'Good (almost there)';
+        strengthText.className = 'text-info mt-1 d-block fw-bold';
+      } else {
+        strengthBar.className = 'progress-bar bg-success';
+        strengthText.textContent = 'Strong!';
+        strengthText.className = 'text-success mt-1 d-block fw-bold';
+      }
+    });
+  });
+</script>
 {% endblock %}

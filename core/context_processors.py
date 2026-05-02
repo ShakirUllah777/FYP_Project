@@ -1,4 +1,5 @@
 from .models import Message
+from .forms import PostForm
 
 def unread_messages(request):
     if request.user.is_authenticated:
@@ -7,3 +8,8 @@ def unread_messages(request):
         ).count()
         return {'unread_count': count}
     return {'unread_count': 0}
+
+def global_forms(request):
+    if request.user.is_authenticated:
+        return {'global_post_form': PostForm()}
+    return {}

@@ -9,12 +9,11 @@
       <div class="card-body text-center">
 
         {% if profile.photo %}
-          <img src="{{ profile.photo.url }}" class="rounded-circle mb-3"
-               width="100" height="100" style="object-fit:cover;">
+          <img src="{{ profile.photo.url }}" class="rounded-circle mb-3 shadow-sm"
+               width="120" height="120" style="object-fit:cover; border: 4px solid white;">
         {% else %}
-          <div class="rounded-circle bg-primary text-white d-flex align-items-center
-                      justify-content-center mx-auto mb-3"
-               style="width:100px;height:100px;font-size:2rem;">
+          <div class="rounded-circle text-white d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm"
+               style="width:120px;height:120px;font-size:2.5rem; background-color: var(--sidebar-bg); border: 4px solid white;">
             {{ profile.user.first_name|first }}
           </div>
         {% endif %}
@@ -49,7 +48,7 @@
 
         {% if is_own %}
           <a href="{% url 'add_skills' %}" class="btn btn-outline-primary btn-sm w-100 mt-2">
-            Edit Skills
+            Edit Profile & Skills
           </a>
         {% else %}
           <a href="{% url 'chat' viewed_user.username %}"
@@ -72,9 +71,9 @@
         {% if user_skills %}
           <div class="d-flex flex-wrap gap-2">
             {% for us in user_skills %}
-              <span class="badge bg-primary">
+              <span class="badge" style="background-color: rgba(37, 99, 235, 0.1); color: var(--primary-blue); font-size: 0.85rem; padding: 8px 12px; font-weight: 600;">
                 {{ us.skill.name }}
-                <span class="badge bg-light text-dark ms-1">{{ us.proficiency }}</span>
+                <span class="badge bg-white text-dark ms-2 shadow-sm border">{{ us.proficiency }}</span>
               </span>
             {% endfor %}
           </div>
@@ -94,17 +93,17 @@
         <h5 class="fw-bold mb-3">Posts</h5>
         {% if posts %}
           {% for post in posts %}
-            <div class="border rounded p-3 mb-3">
+            <div class="border-0 rounded-4 p-4 mb-3 shadow-sm" style="background-color: #f8fafc; border-left: 4px solid {% if post.post_type == 'fyp' %}var(--primary-blue){% else %}#10b981{% endif %} !important;">
               <div class="d-flex justify-content-between">
-                <h6 class="fw-bold">{{ post.title }}</h6>
+                <h6 class="fw-bold" style="font-size: 1.1rem;">{{ post.title }}</h6>
                 {% if post.post_type == 'fyp' %}
-                  <span class="badge bg-primary">FYP</span>
+                  <span class="badge" style="background-color: rgba(37, 99, 235, 0.1); color: var(--primary-blue); font-weight: 600; padding: 6px 12px; border-radius: 6px;">FYP</span>
                 {% else %}
-                  <span class="badge bg-success">Paid Task</span>
+                  <span class="badge" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; padding: 6px 12px; border-radius: 6px;">Paid Task</span>
                 {% endif %}
               </div>
-              <p class="text-muted small mb-1">{{ post.description|truncatechars:120 }}</p>
-              <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+              <p class="text-muted mt-2 mb-3">{{ post.description|truncatechars:120 }}</p>
+              <div class="text-muted" style="font-size: 0.85rem;"><i class="bi bi-clock"></i> {{ post.created_at|timesince }} ago</div>
             </div>
           {% endfor %}
         {% else %}
