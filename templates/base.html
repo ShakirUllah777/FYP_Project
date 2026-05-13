@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 </head>
 <style>
   :root {
@@ -140,13 +141,15 @@
     color: white;
   }
 </style>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
 {% if user.is_authenticated %}
   <div id="sidebar">
     <div class="sidebar-brand">
-      <div class="logo-icon">CS</div>
-      CollabSpace
+      <a href="{% url 'home' %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; margin: 0; padding: 0; background: transparent; font-size: inherit; font-weight: inherit; width: 100%;">
+        <div class="logo-icon">CS</div>
+        CollabSpace
+      </a>
     </div>
     <a href="{% url 'tasks' %}"><i class="bi bi-grid-1x2-fill"></i> Tasks Feed</a>
     <a href="{% url 'seniors' %}"><i class="bi bi-people-fill"></i> Seniors</a>
