@@ -34,7 +34,7 @@ def register(request):
             messages.error(request, 'Passwords do not match.')
             return render(request, 'register.html')
             
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'This email is already registered.')
             return render(request, 'register.html')
 
@@ -68,15 +68,17 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('tasks')
     if request.method == 'POST':
-        email    = request.POST.get('email')
+        email    = request.POST.get('email', '').strip()
         password = request.POST.get('password')
         try:
-            username = User.objects.get(email=email).username
-            user     = authenticate(request, username=username, password=password)
-            if user:
-                login(request, user)
-                return redirect('tasks')
-        except User.DoesNotExist:
+            user_obj = User.objects.filter(email__iexact=email).first()
+            if user_obj:
+                username = user_obj.username
+                user     = authenticate(request, username=username, password=password)
+                if user:
+                    login(request, user)
+                    return redirect('tasks')
+        except Exception:
             pass
         messages.error(request, 'Invalid email or password.')
     return render(request, 'login.html')
