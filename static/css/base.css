@@ -92,6 +92,7 @@ body {
   transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
   width: 100%;
   min-height: 100vh;
+  padding-top: 70px; /* Offset for the fixed navbar */
 }
 
 @media (min-width: 768px) {
@@ -102,12 +103,26 @@ body {
     width: calc(100% - 260px);
   }
   #main-content.expanded { margin-left: 0; width: 100%; }
+
+  /* Shift fixed navbar with the sidebar */
+  #main-content .top-navbar {
+    left: 260px;
+  }
+  #main-content.expanded .top-navbar {
+    left: 0;
+  }
 }
 
 .top-navbar {
   background-color: var(--sidebar-bg);
   color: white;
   padding: 12px 24px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
+  transition: left 0.3s ease-in-out;
 }
 
 .top-navbar .btn-logout {

@@ -56,7 +56,8 @@ def register(request):
             first_name=first_name,
             last_name=last_name
         )
-        Profile.objects.create(user=user)
+        Profile.objects.get_or_create(user=user)
+
 
         messages.success(request, 'Account created successfully! Please login.')
         return redirect('login')
@@ -66,18 +67,31 @@ def register(request):
 
 def login_view(request):
     if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return redirect('/admin/')
         return redirect('tasks')
     if request.method == 'POST':
-        email    = request.POST.get('email', '').strip()
-        password = request.POST.get('password')
+        email_or_username = request.POST.get('email', '').strip()
+        password          = request.POST.get('password')
+        user = None
         try:
-            user_obj = User.objects.filter(email__iexact=email).first()
-            if user_obj:
-                username = user_obj.username
-                user     = authenticate(request, username=username, password=password)
-                if user:
-                    login(request, user)
-                    return redirect('tasks')
+            # 1. Try to authenticate directly as username
+            user = authenticate(request, username=email_or_username, password=password)
+            
+            # 2. If not found, try as email (handling potential duplicate emails gracefully)
+            if not user:
+                users = User.objects.filter(email__iexact=email_or_username)
+                for u in users:
+                    authenticated_user = authenticate(request, username=u.username, password=password)
+                    if authenticated_user:
+                        user = authenticated_user
+                        break
+            
+            if user:
+                login(request, user)
+                if user.is_superuser:
+                    return redirect('/admin/')
+                return redirect('tasks')
         except Exception:
             pass
         messages.error(request, 'Invalid email or password.')
@@ -96,7 +110,7 @@ def tasks(request):
 
 @login_required
 def my_profile(request):
-    profile     = request.user.profile
+    profile, created = Profile.objects.get_or_create(user=request.user)
     user_skills = UserSkill.objects.filter(user=request.user).select_related('skill')
     posts       = Post.objects.filter(author=request.user)
     return render(request, 'profile.html', {
@@ -110,7 +124,7 @@ def my_profile(request):
 @login_required
 def user_profile(request, username):
     viewed_user = get_object_or_404(User, username=username)
-    profile     = viewed_user.profile
+    profile, created = Profile.objects.get_or_create(user=viewed_user)
     user_skills = UserSkill.objects.filter(user=viewed_user).select_related('skill')
     posts       = Post.objects.filter(author=viewed_user)
     return render(request, 'profile.html', {
@@ -130,7 +144,7 @@ def add_skills(request):
     user_skill_ids = list(user_skills.values_list('skill_id', flat=True))
     user_skill_prof = {us.skill_id: us.proficiency for us in user_skills}
     
-    profile = request.user.profile
+    profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         request.user.first_name = request.POST.get('first_name', request.user.first_name)
@@ -279,10 +293,12 @@ def chat(request, username):
         receiver__in=[request.user, other_user]
     ).order_by('sent_at')
 
+    other_profile, created = Profile.objects.get_or_create(user=other_user)
+
     return render(request, 'chat.html', {
         'other_user':    other_user,
         'messages':      messages_qs,
-        'other_profile': other_user.profile,
+        'other_profile': other_profile,
         'is_blocked':    is_blocked,
         'has_blocked_me': has_blocked_me,
     })
