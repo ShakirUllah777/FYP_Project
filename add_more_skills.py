@@ -4,7 +4,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'collabspace.settings')
 django.setup()
 
-from core.models import Skill
+from accounts.models import Skill
 
 skills_to_add = [
     # Frameworks / Tools

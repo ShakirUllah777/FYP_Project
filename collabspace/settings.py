@@ -40,7 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+    'accounts',
+    'posts',
+    'messaging',
+    'assistant',
+    'pages',
 ]
 
 MIDDLEWARE = [
@@ -65,8 +69,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'core.context_processors.unread_messages',
-                'core.context_processors.global_forms',
+                'messaging.context_processors.unread_messages',
+                'pages.context_processors.global_forms',
             ],
         },
     },
