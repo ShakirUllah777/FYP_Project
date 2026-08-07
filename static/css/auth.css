@@ -256,6 +256,7 @@ body.auth-page .container.mt-5 {
   margin-top: 2px;
 }
 
+
 /* Buttons */
 button.auth-btn {
   background-color: var(--primary-blue);
@@ -395,6 +396,20 @@ button.ghost:hover {
   margin-bottom: 15px;
   text-align: left;
   border: 1px solid transparent;
+  transition: opacity 0.5s ease, max-height 0.5s ease, margin-bottom 0.5s ease, padding 0.5s ease;
+  opacity: 1;
+  max-height: 100px;
+}
+
+.auth-alert.fade-out {
+  opacity: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
 }
 
 .auth-alert.error, .auth-alert.danger {

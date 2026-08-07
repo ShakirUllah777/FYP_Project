@@ -21,21 +21,43 @@ def register(request):
         password   = request.POST.get('password', '')
         confirm    = request.POST.get('confirm_password', '')
 
+        form_data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+        }
+
         if not (first_name and last_name and email and password and confirm):
             messages.error(request, 'All fields are required.')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {'form_data': form_data})
 
         if password != confirm:
             messages.error(request, 'Passwords do not match.')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {'form_data': form_data})
 
         if User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'This email is already registered.')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {'form_data': form_data})
 
-        if len(password) < 8 or not re.search(r'[A-Za-z]', password) or not re.search(r'\d', password) or not re.search(r'[\W_]', password):
-            messages.error(request, 'Password must be at least 8 characters long and contain letters, numbers, and symbols.')
-            return render(request, 'accounts/register.html')
+        missing_requirements = []
+        if len(password) < 8:
+            missing_requirements.append('at least 8 characters')
+        if not re.search(r'[A-Z]', password):
+            missing_requirements.append('at least one capital letter (A-Z)')
+        if not re.search(r'[a-z]', password):
+            missing_requirements.append('at least one lowercase letter (a-z)')
+        if not re.search(r'\d', password):
+            missing_requirements.append('at least one number (0-9)')
+        if not re.search(r'[\W_]', password):
+            missing_requirements.append('at least one special symbol (!@#$%^&* etc.)')
+
+        if missing_requirements:
+            if len(missing_requirements) == 1:
+                msg = f"Password requirements not met: {missing_requirements[0]} is missing."
+            else:
+                msg = f"Password requirements not met: {', '.join(missing_requirements[:-1])} and {missing_requirements[-1]} are missing."
+            messages.error(request, msg)
+            return render(request, 'accounts/register.html', {'form_data': form_data})
 
         base_username = f"{first_name.lower()}_{last_name.lower()}"
         username = base_username

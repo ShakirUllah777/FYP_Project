@@ -13,6 +13,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmPasswordInput = document.getElementById('id_confirm_password');
     const matchText = document.getElementById('password-match-text');
 
+    // Auto-dismiss alert messages after 3 seconds
+    const alerts = document.querySelectorAll('.auth-alert');
+    if (alerts.length > 0) {
+        setTimeout(function () {
+            alerts.forEach(function (alertItem) {
+                alertItem.classList.add('fade-out');
+                setTimeout(function () {
+                    if (alertItem) {
+                        alertItem.style.display = 'none';
+                    }
+                    if (alertItem && alertItem.parentNode && alertItem.parentNode.classList.contains('w-100')) {
+                        alertItem.parentNode.style.display = 'none';
+                    }
+                }, 500);
+            });
+        }, 3000);
+    }
+
     // Slide panel functionality
     function activateSignUp() {
         if (container) {
@@ -57,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+
     // Password validation logic
     function checkPasswordMatch() {
         if (!passwordInput || !confirmPasswordInput || !matchText) return;
@@ -87,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (passwordInput) {
         passwordInput.addEventListener('input', function () {
             const val = passwordInput.value;
-            let score = 0;
 
             if (!val) {
                 if (strengthBar) {
@@ -95,45 +113,41 @@ document.addEventListener('DOMContentLoaded', function () {
                     strengthBar.className = 'progress-bar';
                 }
                 if (strengthText) {
-                    strengthText.textContent = 'Password strength';
-                    strengthText.className = 'text-muted mt-1 d-block';
+                    strengthText.textContent = '';
                 }
                 checkPasswordMatch();
                 return;
             }
 
-            if (val.length >= 8) score += 25;
-            if (/[A-Za-z]/.test(val)) score += 25;
-            if (/\d/.test(val)) score += 25;
-            if (/[\W_]/.test(val)) score += 25;
+            const missing = [];
+            if (val.length < 8) missing.push('at least 8 characters');
+            if (!/[A-Z]/.test(val)) missing.push('capital letter (A-Z)');
+            if (!/[a-z]/.test(val)) missing.push('lowercase letter (a-z)');
+            if (!/\d/.test(val)) missing.push('number (0-9)');
+            if (!/[\W_]/.test(val)) missing.push('special symbol (!@#$...)');
+
+            const total = 5;
+            const metCount = total - missing.length;
+            const score = (metCount / total) * 100;
 
             if (strengthBar) {
                 strengthBar.style.width = score + '%';
+                if (score <= 40) {
+                    strengthBar.className = 'progress-bar bg-danger';
+                } else if (score <= 80) {
+                    strengthBar.className = 'progress-bar bg-warning';
+                } else {
+                    strengthBar.className = 'progress-bar bg-success';
+                }
             }
 
-            if (score <= 25) {
-                if (strengthBar) strengthBar.className = 'progress-bar bg-danger';
-                if (strengthText) {
-                    strengthText.textContent = 'Weak (add letters/numbers/symbols)';
-                    strengthText.className = 'text-danger mt-1 d-block fw-bold';
-                }
-            } else if (score <= 50) {
-                if (strengthBar) strengthBar.className = 'progress-bar bg-warning';
-                if (strengthText) {
-                    strengthText.textContent = 'Fair (keep adding)';
-                    strengthText.className = 'text-warning mt-1 d-block fw-bold';
-                }
-            } else if (score <= 75) {
-                if (strengthBar) strengthBar.className = 'progress-bar bg-info';
-                if (strengthText) {
-                    strengthText.textContent = 'Good (almost there)';
-                    strengthText.className = 'text-info mt-1 d-block fw-bold';
-                }
-            } else {
-                if (strengthBar) strengthBar.className = 'progress-bar bg-success';
-                if (strengthText) {
-                    strengthText.textContent = 'Strong!';
-                    strengthText.className = 'text-success mt-1 d-block fw-bold';
+            if (strengthText) {
+                if (missing.length === 0) {
+                    strengthText.innerHTML = '<i class="bi bi-check-circle-fill"></i> Strong password! All requirements met.';
+                    strengthText.className = 'text-success mt-1 small d-block fw-bold';
+                } else {
+                    strengthText.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Missing: ' + missing.join(', ');
+                    strengthText.className = 'text-danger mt-1 small d-block fw-bold';
                 }
             }
 

@@ -35,37 +35,35 @@
 
       <div class="form-group-row">
         <div class="form-input-wrapper">
-          <input type="text" name="first_name" placeholder="First Name" required autocomplete="given-name">
+          <input type="text" name="first_name" placeholder="First Name" value="{{ form_data.first_name|default:'' }}" required autocomplete="given-name">
         </div>
         <div class="form-input-wrapper">
-          <input type="text" name="last_name" placeholder="Last Name" required autocomplete="family-name">
+          <input type="text" name="last_name" placeholder="Last Name" value="{{ form_data.last_name|default:'' }}" required autocomplete="family-name">
         </div>
       </div>
 
       <div class="form-input-wrapper">
-        <input type="email" name="email" placeholder="Email" required autocomplete="email">
+        <input type="email" name="email" placeholder="Email" value="{{ form_data.email|default:'' }}" required autocomplete="email">
       </div>
 
       <div class="form-input-wrapper mb-1">
-        <input type="password" name="password" id="id_password" placeholder="Password"
-               pattern="(?=.*\d)(?=.*[a-zA-Z])(?=.*[\W_]).{8,}"
-               title="Must contain at least one number, one letter, one special character, and at least 8 or more characters"
+        <input type="password" name="password" id="id_password" placeholder="Password (8+ chars, A-Z, a-z, 0-9, symbol)"
                required autocomplete="new-password">
       </div>
 
-      <!-- Password strength check bar -->
-      <div class="password-strength-container">
+      <!-- Password strength check bar & dynamic requirement feedback -->
+      <div class="password-strength-container mb-2">
         <div class="progress">
           <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%;"
                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
-        <small id="password-strength-text" class="text-muted">Password strength</small>
+        <div id="password-strength-text" class="text-muted small mt-1 text-start"></div>
       </div>
 
       <div class="form-input-wrapper mb-1 confirm-password-container">
         <input type="password" name="confirm_password" id="id_confirm_password" placeholder="Confirm Password" required autocomplete="new-password">
-        <small id="password-match-text" class="text-muted"></small>
       </div>
+      <small id="password-match-text" class="text-muted mb-2 d-block text-start w-100"></small>
 
       <button type="submit" class="auth-btn">Sign Up</button>
       
@@ -99,7 +97,7 @@
 
 
       <div class="form-input-wrapper">
-        <input type="password" name="password" placeholder="Password" required autocomplete="current-password">
+        <input type="password" name="password" id="id_signin_password" placeholder="Password" required autocomplete="current-password">
       </div>
 
       <button type="submit" class="auth-btn">Sign In</button>
