@@ -20,7 +20,7 @@
       <div class="hero-actions">
         {% if user.is_authenticated %}
           <a href="{% url 'tasks' %}" class="btn-primary-custom">Go to Dashboard</a>
-          <a href="{% url 'add_post' %}" class="btn-secondary-custom">Post a Task</a>
+          <a href="#" data-bs-toggle="modal" data-bs-target="#addPostModal" class="btn-secondary-custom">Post a Task</a>
         {% else %}
           <a href="{% url 'register' %}" class="btn-primary-custom">Start Collaborating</a>
           <a href="{% url 'login' %}" class="btn-secondary-custom">Login</a>

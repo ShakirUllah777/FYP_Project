@@ -91,14 +91,30 @@ function getCookie(name) {
 
 // Select2 initialization
 $(document).ready(function() {
-  if ($('.select2').length > 0) {
-    $('.select2').select2({
-      dropdownParent: $('#addPostModal'),
-      width: '100%',
-      placeholder: 'Search for skills...'
+  function initSelect2() {
+    $('.select2').each(function() {
+      var $el = $(this);
+      if (!$el.hasClass("select2-hidden-accessible")) {
+        var inModal = $el.closest('#addPostModal').length > 0;
+        $el.select2({
+          dropdownParent: inModal ? $('#addPostModal') : $(document.body),
+          width: '100%',
+          tags: true,
+          tokenSeparators: [','],
+          placeholder: 'Search or type skills...'
+        });
+      }
+    });
+  }
+  initSelect2();
+  if ($('#addPostModal').length > 0) {
+    $('#addPostModal').on('shown.bs.modal', function() {
+      initSelect2();
     });
   }
 });
+
+
 
 // AI Suggestion functionality
 async function getAISuggestion() {

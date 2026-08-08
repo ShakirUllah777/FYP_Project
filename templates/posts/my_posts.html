@@ -2,8 +2,8 @@
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h3 class="text-primary mb-0">My Posts</h3>
-  <a href="{% url 'add_post' %}" class="btn btn-primary btn-sm">+ Add Post</a>
+  <h3 class="fw-bold text-dark mb-0" style="font-size: 1.5rem;">My Posts</h3>
+  <button type="button" class="btn btn-primary btn-sm px-3 rounded-pill fw-medium" data-bs-toggle="modal" data-bs-target="#addPostModal"><i class="bi bi-plus-lg"></i> Add Post</button>
 </div>
 
 {% if posts %}
@@ -51,7 +51,7 @@
 {% else %}
   <div class="text-center py-5 text-muted">
     <h5>You have no posts yet.</h5>
-    <a href="{% url 'add_post' %}" class="btn btn-primary mt-2">Create your first post</a>
+    <button type="button" class="btn btn-primary mt-2 rounded-pill px-4 fw-medium" data-bs-toggle="modal" data-bs-target="#addPostModal"><i class="bi bi-plus-lg me-1"></i> Create your first post</button>
   </div>
 {% endif %}
 

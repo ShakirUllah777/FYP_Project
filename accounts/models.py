@@ -32,11 +32,15 @@ class Profile(models.Model):
 
 class Skill(models.Model):
     CATEGORY_CHOICES = [
-        ('programming', 'Programming Languages'),
-        ('frameworks',  'Frameworks'),
-        ('ai_data',     'AI / Data'),
-        ('databases',   'Databases'),
-        ('others',      'Others'),
+        ('programming',  'Programming Languages'),
+        ('frameworks',   'Frameworks & Libraries'),
+        ('ai_data',      'AI, Data Science & ML'),
+        ('databases',    'Databases & Storage'),
+        ('devops_cloud', 'DevOps & Cloud'),
+        ('mobile',       'Mobile Development'),
+        ('web_design',   'Web & UI/UX Design'),
+        ('security_qa',  'Cybersecurity & QA'),
+        ('others',       'Tools & Other Tech'),
     ]
     name     = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)

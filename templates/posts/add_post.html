@@ -2,92 +2,74 @@
 {% block content %}
 
 <div class="row justify-content-center">
-  <div class="col-md-7">
+  <div class="col-md-7 col-lg-6">
 
-    <!-- AI Suggestion Box -->
-    <div class="card border-0 mb-4"
-         style="background: linear-gradient(135deg, #1a3c5e, #2e75b6); border-radius:12px;">
-      <div class="card-body p-4">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span style="font-size:1.3rem;">🤖</span>
-          <h6 class="text-white fw-bold mb-0">AI Title & Description Suggester</h6>
-          <span class="badge bg-warning text-dark ms-1" style="font-size:0.65rem;">BETA</span>
-        </div>
-        <p class="text-white mb-3" style="opacity:0.8; font-size:0.88rem;">
-          Type a few keywords about your project and let AI write the title and description for you.
-        </p>
-        <div class="d-flex gap-2">
-          <input type="text"
-                 id="ai-keywords"
-                 class="form-control"
-                 placeholder="e.g. machine learning, healthcare, prediction..."
-                 style="border-radius:8px;">
-          <button onclick="getAISuggestion()"
-                  id="ai-btn"
-                  class="btn btn-warning fw-bold px-4"
-                  style="white-space:nowrap; border-radius:8px;">
-            ✨ Suggest
-          </button>
-        </div>
-        <div id="ai-loading"
-             class="text-white mt-2"
-             style="display:none; font-size:0.85rem; opacity:0.8;">
-          ⏳ Generating suggestion...
-        </div>
-        <div id="ai-success"
-             class="mt-2"
-             style="display:none;">
-          <span class="badge bg-success">✅ Title and description filled!</span>
-        </div>
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.25rem;">
+          {% if editing %}Edit Post{% else %}Create a New Post{% endif %}
+        </h5>
       </div>
-    </div>
+      <div class="card-body p-4 pt-2">
+        <!-- AI Suggestion Box -->
+        <div class="card border-0 mb-3" style="background: linear-gradient(135deg, #1a3c5e, #2e75b6); border-radius:10px;">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span style="font-size:1rem;">🤖</span>
+              <h6 class="text-white fw-bold mb-0" style="font-size:0.85rem;">AI Suggester</h6>
+              <span class="badge bg-warning text-dark ms-1" style="font-size:0.55rem;">BETA</span>
+            </div>
+            <div class="d-flex gap-2">
+              <input type="text" id="ai-keywords" class="form-control form-control-sm" placeholder="Keywords (e.g. AI, web)..." style="border-radius:6px;">
+              <button type="button" onclick="getAISuggestion()" id="ai-btn" class="btn btn-warning btn-sm fw-bold px-2" style="white-space:nowrap; border-radius:6px; font-size:0.75rem;">
+                ✨ Suggest
+              </button>
+            </div>
+            <div id="ai-loading" class="text-white mt-1" style="display:none; font-size:0.7rem; opacity:0.8;">⏳ Working...</div>
+            <div id="ai-success" class="mt-1" style="display:none;"><span class="badge bg-success" style="font-size:0.65rem;">✅ Filled!</span></div>
+          </div>
+        </div>
 
-    <!-- Post Form -->
-    <div class="card shadow-sm">
-      <div class="card-body p-4">
-        <h3 class="text-primary mb-4">
-          {% if editing %}Edit Post{% else %}Add New Post{% endif %}
-        </h3>
+        <!-- Form -->
         <form method="POST">
           {% csrf_token %}
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Title</label>
-            {{ form.title }}
-            {{ form.title.errors }}
+          <div class="row gx-2">
+            <div class="col-md-6 mb-2">
+              <label class="form-label fw-medium text-dark small mb-1">Title</label>
+              {{ form.title }}
+              {{ form.title.errors }}
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label fw-medium text-dark small mb-1">Type</label>
+              {{ form.post_type }}
+              {{ form.post_type.errors }}
+            </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Type</label>
-            {{ form.post_type }}
-            {{ form.post_type.errors }}
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-bold">Description</label>
+          <div class="mb-2">
+            <label class="form-label fw-medium text-dark small mb-1">Description</label>
             {{ form.description }}
             {{ form.description.errors }}
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Skills Required</label>
-            <div class="border rounded p-3" style="max-height:200px; overflow-y:auto;">
+          <div class="row gx-2">
+            <div class="col-md-7 mb-2">
+              <label class="form-label fw-medium text-dark small mb-1">Skills Required</label>
               {{ form.skills_required }}
+              {{ form.skills_required.errors }}
             </div>
-            {{ form.skills_required.errors }}
+            <div class="col-md-5 mb-2">
+              <label class="form-label fw-medium text-dark small mb-1">Deadline</label>
+              {{ form.deadline }}
+              {{ form.deadline.errors }}
+            </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Deadline (optional)</label>
-            {{ form.deadline }}
-            {{ form.deadline.errors }}
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100">
-            {% if editing %}Update Post{% else %}Create Post{% endif %}
+          <button type="submit" class="btn btn-primary w-100 rounded-pill fw-medium py-2 mt-3">
+            {% if editing %}Update Post{% else %}Publish Post{% endif %}
           </button>
-          <a href="{% url 'tasks' %}"
-             class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+          <a href="{% url 'tasks' %}" class="btn btn-outline-secondary w-100 rounded-pill fw-medium py-1 mt-2">Cancel</a>
         </form>
       </div>
     </div>
@@ -137,6 +119,8 @@ async function getAISuggestion() {
   // Reset button
   document.getElementById('ai-btn').disabled    = false;
   document.getElementById('ai-btn').innerText   = '✨ Suggest';
+}
+
 }
 
 function getCookie(name) {

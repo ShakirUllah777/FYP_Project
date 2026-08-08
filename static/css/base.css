@@ -162,3 +162,5 @@ body {
 .cs-quick-btns { display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 10px; background:#f8faff; }
 .cs-quick { background:#e8f0fe; color:#2e75b6; border:none; border-radius:20px; padding:4px 12px; font-size:0.78rem; cursor:pointer; }
 .cs-quick:hover { background:#c5d9f5; }
+
+

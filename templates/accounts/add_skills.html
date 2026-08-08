@@ -100,6 +100,11 @@
 
           <h5 class="mb-3 border-bottom pb-2 mt-5">Your Skills</h5>
 
+          <div class="card bg-light border-0 p-3 mb-4 rounded-3 shadow-sm">
+            <label class="form-label fw-bold text-dark mb-1"><i class="bi bi-plus-circle-fill text-primary me-1"></i> Add Custom Missing Skill</label>
+            <input type="text" name="custom_skill" class="form-control" placeholder="e.g. Quantum Computing, Web3, Solana, Bioinformatics...">
+            <div class="form-text text-muted" style="font-size:0.8rem;">Don't see your specific skill in the domain list below? Type it here and save to add it instantly to your profile!</div>
+          </div>
 
           <div class="accordion" id="skillsAccordion">
             {% for cat_code, cat_name in categories %}

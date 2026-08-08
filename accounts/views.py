@@ -183,10 +183,22 @@ def add_skills(request):
         UserSkill.objects.filter(user=request.user).delete()
         skill_ids = request.POST.getlist('skills')
         for sid in skill_ids:
-            skill = get_object_or_404(Skill, id=sid)
-            UserSkill.objects.create(
-                user=request.user, skill=skill, proficiency='beginner'
+            if sid and sid.isdigit():
+                skill = get_object_or_404(Skill, id=int(sid))
+                UserSkill.objects.create(
+                    user=request.user, skill=skill, proficiency='beginner'
+                )
+
+        custom_skill_name = request.POST.get('custom_skill', '').strip()
+        if custom_skill_name:
+            custom_skill, _ = Skill.objects.get_or_create(
+                name=custom_skill_name,
+                defaults={'category': 'others'}
             )
+            UserSkill.objects.get_or_create(
+                user=request.user, skill=custom_skill, defaults={'proficiency': 'beginner'}
+            )
+
         messages.success(request, 'Profile and skills updated!')
         return redirect('my_profile')
 
