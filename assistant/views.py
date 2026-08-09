@@ -63,7 +63,10 @@ def ai_suggest(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
-@login_required
+from django.views.decorators.csrf import csrf_exempt
+
+
+@csrf_exempt
 def chatbot(request):
     if request.method == 'POST':
         data     = json.loads(request.body)
