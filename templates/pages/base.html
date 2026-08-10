@@ -110,60 +110,98 @@
 </script>
 
 {% if user.is_authenticated and global_post_form %}
-<div class="modal fade" id="addPostModal" tabindex="-1" aria-labelledby="addPostModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header border-bottom-0 pb-0">
-        <h5 class="modal-title fw-bold" id="addPostModalLabel" style="font-size: 1.25rem;">Create a New Post</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body pt-2">
-        <!-- AI Suggestion Box -->
-        <div class="card border-0 mb-2" style="background: linear-gradient(135deg, #1a3c5e, #2e75b6); border-radius:10px;">
-          <div class="card-body p-2">
-            <div class="d-flex align-items-center gap-2 mb-1">
-              <span style="font-size:1rem;">🤖</span>
-              <h6 class="text-white fw-bold mb-0" style="font-size:0.85rem;">AI Suggester</h6>
-              <span class="badge bg-warning text-dark ms-1" style="font-size:0.55rem;">BETA</span>
-            </div>
-            <div class="d-flex gap-2">
-              <input type="text" id="ai-keywords" class="form-control form-control-sm" placeholder="Keywords (e.g. AI, web)..." style="border-radius:6px;">
-              <button type="button" onclick="getAISuggestion()" id="ai-btn" class="btn btn-warning btn-sm fw-bold px-2" style="white-space:nowrap; border-radius:6px; font-size:0.75rem;">
-                ✨ Suggest
-              </button>
-            </div>
-            <div id="ai-loading" class="text-white mt-1" style="display:none; font-size:0.7rem; opacity:0.8;">⏳ Working...</div>
-            <div id="ai-success" class="mt-1" style="display:none;"><span class="badge bg-success" style="font-size:0.65rem;">✅ Filled!</span></div>
-          </div>
+<div class="modal fade modal-create-post" id="addPostModal" tabindex="-1" aria-labelledby="addPostModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" id="createPostModalDialog">
+    <div class="modal-content">
+      <!-- Modal Header with Expand/Extend toggle button -->
+      <div class="modal-create-header">
+        <h5 class="modal-create-title" id="addPostModalLabel">
+          <span class="header-icon"><i class="bi bi-pencil-square"></i></span>
+          Create a New Post
+        </h5>
+        <div class="modal-header-actions">
+          <button type="button" class="btn-expand-modal" id="modalExpandToggle" onclick="toggleModalExpand()" title="Expand editor workspace mode">
+            <i class="bi bi-arrows-angle-expand" id="expandToggleIcon"></i>
+            <span id="expandToggleText">Expand Editor</span>
+          </button>
+          <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Close" title="Close">
+            <i class="bi bi-x-lg"></i>
+          </button>
         </div>
-        <form method="POST" action="{% url 'add_post' %}">
-          {% csrf_token %}
-          <div class="row gx-2">
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-medium text-dark small mb-0">Title</label>
-              {{ global_post_form.title }}
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-create-body">
+        <div class="post-create-grid" id="postCreateGrid">
+          
+          <!-- Left Column: Form & AI Suggester -->
+          <div class="post-form-panel">
+            
+            <!-- AI Suggester Card -->
+            <div class="ai-suggester-card">
+              <div class="ai-card-header">
+                <div class="ai-card-title">
+                  <span>🤖</span> AI Suggester
+                  <span class="ai-card-badge">BETA</span>
+                </div>
+              </div>
+              <div class="ai-input-group">
+                <input type="text" id="ai-keywords" class="ai-input-field" placeholder="Type keywords (e.g. AI, Fullstack, Mobile)...">
+                <button type="button" onclick="getAISuggestion()" id="ai-btn" class="ai-suggest-btn">
+                  ✨ Suggest
+                </button>
+              </div>
+              <div id="ai-loading" class="mt-2 text-warning" style="display:none; font-size:0.75rem;"><i class="bi bi-hourglass-split"></i> Generating smart project content...</div>
+              <div id="ai-success" class="mt-2" style="display:none;"><span class="badge bg-success text-white" style="font-size:0.7rem;">✨ Title & Description Filled!</span></div>
+
+              <!-- Quick Keyword Presets -->
+              <div class="ai-presets-row">
+                <span class="ai-presets-label">Popular:</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('Machine Learning')">🤖 ML & AI</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('Web Development')">💻 Fullstack Web</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('Mobile App')">📱 Flutter / React Native</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('UI UX Design')">🎨 UI/UX Design</span>
+              </div>
             </div>
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-medium text-dark small mb-0">Type</label>
-              {{ global_post_form.post_type }}
-            </div>
+
+            <!-- Django Post Form -->
+            <form method="POST" action="{% url 'add_post' %}" id="createPostForm">
+              {% csrf_token %}
+              
+              <div class="row gx-3">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label-custom">Title <span class="text-danger">*</span></label>
+                  {{ global_post_form.title }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label-custom">Post Type <span class="text-danger">*</span></label>
+                  {{ global_post_form.post_type }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label-custom">Description <span class="text-danger">*</span></label>
+                {{ global_post_form.description }}
+              </div>
+
+              <div class="row gx-3">
+                <div class="col-md-7 mb-3">
+                  <label class="form-label-custom">Skills Required</label>
+                  {{ global_post_form.skills_required }}
+                </div>
+                <div class="col-md-5 mb-3">
+                  <label class="form-label-custom">Deadline</label>
+                  {{ global_post_form.deadline }}
+                </div>
+              </div>
+
+              <button type="submit" class="btn-publish-post mt-2">
+                <i class="bi bi-send-fill"></i> Publish Post
+              </button>
+            </form>
           </div>
-          <div class="mb-2">
-            <label class="form-label fw-medium text-dark small mb-0">Description</label>
-            {{ global_post_form.description }}
-          </div>
-          <div class="row gx-2">
-            <div class="col-md-7 mb-2">
-              <label class="form-label fw-medium text-dark small mb-0">Skills Required</label>
-              {{ global_post_form.skills_required }}
-            </div>
-            <div class="col-md-5 mb-2">
-              <label class="form-label fw-medium text-dark small mb-0">Deadline</label>
-              {{ global_post_form.deadline }}
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary w-100 rounded-pill fw-medium py-1 mt-1">Publish Post</button>
-        </form>
+
+        </div>
       </div>
     </div>
   </div>

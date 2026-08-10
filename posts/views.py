@@ -57,9 +57,8 @@ def edit_post(request, pk):
 @login_required
 def delete_post(request, pk):
     post = get_object_or_404(Post, pk=pk, author=request.user)
-    if request.method == 'POST':
-        post.delete()
-        messages.success(request, 'Post deleted.')
+    post.delete()
+    messages.success(request, 'Post deleted successfully.')
     return redirect('my_posts')
 
 
