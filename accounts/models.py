@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -23,11 +24,72 @@ class Profile(models.Model):
     availability = models.CharField(max_length=10, choices=AVAILABILITY, blank=True, null=True)
     created_at   = models.DateTimeField(auto_now_add=True)
 
+    # --- New: cohort / batch grouping ---
+    batch        = models.CharField(max_length=20, blank=True, help_text='e.g. Fall 2022, Spring 2023')
+
+    # --- New: trust & verification ---
+    is_verified       = models.BooleanField(default=False, help_text='University email verified')
+    id_card            = models.ImageField(upload_to='id_cards/', blank=True, null=True, help_text='Student card photo for senior verification')
+    is_id_verified     = models.BooleanField(default=False, help_text='Reviewed and approved by an admin')
+
+    # --- New: role flags ---
+    is_supervisor      = models.BooleanField(default=False, help_text='Faculty / supervisor account that can endorse FYP posts')
+
+    # --- New: AI Resume Auto-Fill ---
+    resume              = models.FileField(upload_to='resumes/', blank=True, null=True, help_text='Uploaded CV/resume (PDF, DOCX or TXT)')
+    resume_updated_at   = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         db_table = 'core_profile'
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+
+class EmailVerification(models.Model):
+    """One-time token e-mailed to the user to confirm their university
+    inbox actually belongs to them."""
+    user       = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification')
+    token      = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'core_email_verification'
+
+    def __str__(self):
+        return f"Verification for {self.user.username}"
+
+    @staticmethod
+    def generate_token():
+        import secrets
+        return secrets.token_urlsafe(32)
+
+
+class SavedSearch(models.Model):
+    """A saved Task Feed filter. Lets a student get back to (and later,
+    be alerted about) posts matching a skill/type/department combo."""
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_searches')
+    label      = models.CharField(max_length=100, blank=True)
+    skill      = models.CharField(max_length=100, blank=True)
+    post_type  = models.CharField(max_length=10, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'core_saved_search'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.label or f"Search by {self.user.username}"
+
+    def matching_posts(self):
+        from posts.models import Post
+        qs = Post.objects.exclude(author=self.user)
+        if self.skill:
+            qs = qs.filter(skills_required__name=self.skill)
+        if self.post_type:
+            qs = qs.filter(post_type=self.post_type)
+        return qs
 
 
 class Skill(models.Model):

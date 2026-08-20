@@ -35,8 +35,15 @@
         </option>
       </select>
 
+      <input type="text"
+             name="batch"
+             value="{{ batch }}"
+             class="form-control"
+             style="max-width:180px;"
+             placeholder="Batch e.g. Fall 2022">
+
       <button type="submit" class="btn btn-primary px-4">Search</button>
-      {% if search or semester %}
+      {% if search or semester or batch %}
         <a href="{% url 'seniors' %}" class="btn btn-outline-secondary">Clear</a>
       {% endif %}
 
@@ -44,17 +51,18 @@
   </div>
 </div>
 
-{% if search or semester %}
+{% if search or semester or batch %}
   <p class="text-muted mb-3">
     {% if search %}Search: <strong>"{{ search }}"</strong>{% endif %}
     {% if semester %}Semester: <strong>{{ semester }}</strong>{% endif %}
+    {% if batch %}Batch: <strong>{{ batch }}</strong>{% endif %}
   </p>
 {% endif %}
 
 <!-- Senior Profiles -->
 {% if seniors %}
   <div class="row g-4">
-    {% for profile in seniors %}
+    {% for profile, rating in seniors %}
     <div class="col-md-6">
       <div class="card shadow-sm h-100 border-0"
            style="border-radius:14px; overflow:hidden;">
@@ -82,12 +90,18 @@
             <div class="flex-grow-1">
               <h5 class="fw-bold mb-0">
                 {{ profile.user.first_name }} {{ profile.user.last_name }}
+                {% if profile.is_verified %}<i class="bi bi-patch-check-fill text-primary small"></i>{% endif %}
+                {% if profile.is_id_verified %}<i class="bi bi-shield-check text-success small" title="ID Verified"></i>{% endif %}
               </h5>
               <div class="text-muted small">@{{ profile.user.username }}</div>
+              {% if rating.average %}
+                <div class="small"><i class="bi bi-star-fill text-warning"></i> {{ rating.average }} ({{ rating.count }})</div>
+              {% endif %}
               <div class="mt-1">
                 <span class="badge bg-primary">Semester {{ profile.semester }}</span>
                 <span class="badge bg-light text-dark border ms-1">{{ profile.program }}</span>
                 <span class="badge bg-light text-dark border ms-1">{{ profile.department }}</span>
+                {% if profile.batch %}<span class="badge bg-light text-dark border ms-1">{{ profile.batch }}</span>{% endif %}
               </div>
             </div>
           </div>

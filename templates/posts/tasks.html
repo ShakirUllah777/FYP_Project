@@ -24,9 +24,36 @@
           </option>
         {% endfor %}
       </select>
+      <select name="sort" class="form-select form-select-sm w-auto">
+        <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+        <option value="match" {% if sort_by == 'match' %}selected{% endif %}>Best Match</option>
+      </select>
       <button type="submit" class="btn btn-outline-primary btn-sm">Filter</button>
       <a href="{% url 'tasks' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
+      <button type="button" class="btn btn-outline-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#saveSearchModal">
+        <i class="bi bi-bookmark-plus"></i> Save this search
+      </button>
     </form>
+  </div>
+</div>
+
+<!-- Save Search Modal -->
+<div class="modal fade" id="saveSearchModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'save_search' %}">
+        {% csrf_token %}
+        <input type="hidden" name="skill" value="{{ request.GET.skill }}">
+        <input type="hidden" name="post_type" value="{{ request.GET.type }}">
+        <div class="modal-body">
+          <h6 class="fw-bold mb-2">Save this search</h6>
+          <input type="text" name="label" class="form-control" placeholder="e.g. Django FYP alerts">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary btn-sm">Save</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -57,17 +84,29 @@
             </a>
             <div class="text-muted" style="font-size: 0.85rem;">@{{ post.author.username }}</div>
           </div>
-          <div class="ms-auto">
+          <div class="ms-auto text-end">
+            <a href="{% url 'toggle_bookmark' post.pk %}" class="post-bookmark-btn {% if post.is_bookmarked %}is-saved{% endif %}" title="{% if post.is_bookmarked %}Remove from Saved Posts{% else %}Save for later{% endif %}">
+              <i class="bi {% if post.is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+            </a>
             {% if post.post_type == 'fyp' %}
               <span class="badge" style="background-color: rgba(37, 99, 235, 0.1); color: var(--primary-blue); font-weight: 600; padding: 6px 12px; border-radius: 6px;">FYP</span>
             {% else %}
               <span class="badge" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; padding: 6px 12px; border-radius: 6px;">Paid Task</span>
             {% endif %}
+            {% if post.match_score is not None %}
+              <div class="mt-1">
+                <span class="badge {% if post.match_score >= 70 %}bg-success{% elif post.match_score >= 40 %}bg-warning text-dark{% else %}bg-light text-dark border{% endif %}" style="font-size:0.7rem;">
+                  {{ post.match_score }}% Match
+                </span>
+              </div>
+            {% endif %}
           </div>
         </div>
 
       <!-- Post content -->
-      <h5 class="fw-bold mb-2" style="font-size: 1.1rem;">{{ post.title }}</h5>
+      <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none text-dark">
+        <h5 class="fw-bold mb-2" style="font-size: 1.1rem;">{{ post.title }}</h5>
+      </a>
       <div class="text-muted mb-3" style="font-size: 0.95rem;">
         {% if post.description|length > 120 %}
           <span id="desc-short-{{ post.id }}">

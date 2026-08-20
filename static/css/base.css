@@ -1079,3 +1079,220 @@ textarea.form-control {
 }
 
 
+
+/* ============================================================
+   "MORE" MEGA-MENU — professional dropdown redesign
+   ============================================================ */
+
+.more-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+}
+.more-toggle::after {
+  display: none !important;
+  content: none !important;
+}
+.more-caret {
+  font-size: 0.62rem;
+  transition: transform 0.25s ease;
+  position: relative;
+  top: 1px;
+}
+.more-dropdown.show .more-caret,
+.more-toggle[aria-expanded="true"] .more-caret {
+  transform: rotate(180deg);
+}
+
+.more-menu {
+  --menu-w: 560px;
+  width: var(--menu-w);
+  max-width: min(92vw, var(--menu-w));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px -12px rgba(11, 15, 26, 0.22), 0 4px 14px rgba(11, 15, 26, 0.06);
+  overflow: hidden;
+  margin-top: 14px !important;
+  background: #ffffff;
+  animation: moreMenuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
+}
+
+@keyframes moreMenuIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.more-menu-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 22px 16px;
+  background: linear-gradient(135deg, var(--blue) 0%, #4F8BFF 100%);
+  position: relative;
+}
+.more-menu-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 90% -20%, rgba(255,255,255,0.25), transparent 60%);
+  pointer-events: none;
+}
+.more-menu-eyebrow {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+}
+.more-menu-title {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.more-menu-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 6px;
+  padding: 14px;
+}
+
+.more-menu-col-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding: 6px 10px 8px;
+}
+.more-menu-col-title-spaced {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.more-menu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--ink);
+  position: relative;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.more-menu-item:hover {
+  background: var(--blue-l);
+  transform: translateX(2px);
+}
+.more-menu-item:hover .more-menu-icon {
+  transform: scale(1.08);
+}
+.more-menu-item:hover .more-menu-name {
+  color: var(--blue);
+}
+
+.more-menu-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: #fff;
+  transition: transform 0.15s ease;
+}
+.icon-blue   { background: linear-gradient(135deg, #1B6FFF, #4F8BFF); }
+.icon-violet { background: linear-gradient(135deg, #7C5CFF, #A78BFA); }
+.icon-amber  { background: linear-gradient(135deg, #F5A623, #FBC531); }
+.icon-rose   { background: linear-gradient(135deg, #FF5B7A, #FF8FA3); }
+.icon-green  { background: linear-gradient(135deg, #12B76A, #4ADE80); }
+.icon-navy   { background: linear-gradient(135deg, #0B0F1A, #3D4A63); }
+.icon-red    { background: linear-gradient(135deg, #E63946, #FF6B6B); }
+
+.more-menu-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.more-menu-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: var(--ink);
+  transition: color 0.15s ease;
+}
+.more-menu-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.73rem;
+  color: var(--ink3);
+  line-height: 1.3;
+}
+
+.more-menu-badge {
+  margin-left: auto;
+  align-self: flex-start;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.badge-new { background: rgba(18, 183, 106, 0.12); color: var(--green); }
+.badge-ai  { background: rgba(124, 92, 255, 0.12); color: #7C5CFF; }
+
+@media (max-width: 991px) {
+  .more-menu {
+    --menu-w: 340px;
+  }
+  .more-menu-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Post bookmark ("Save for later") button
+   ============================================================ */
+.post-bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  color: var(--ink3);
+  background: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.18s ease;
+  margin-bottom: 6px;
+}
+.post-bookmark-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-l);
+  transform: translateY(-1px);
+}
+.post-bookmark-btn.is-saved {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 91, 59, 0.08);
+}
+.post-bookmark-btn.is-saved:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 91, 59, 0.14);
+}

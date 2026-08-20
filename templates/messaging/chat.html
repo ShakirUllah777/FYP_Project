@@ -53,9 +53,12 @@
               <div class="d-flex justify-content-end mb-2">
                 <div class="px-3 py-2 rounded-4 text-white shadow-sm"
                      style="max-width:75%; background-color: var(--primary-blue);">
-                  <div>{{ msg.content }}</div>
+                  {% if msg.content %}<div>{{ msg.content }}</div>{% endif %}
+                  {% if msg.attachment %}
+                    <div class="mt-1"><a href="{{ msg.attachment.url }}" target="_blank" class="text-white text-decoration-underline small"><i class="bi bi-paperclip"></i> {{ msg.attachment_name }}</a></div>
+                  {% endif %}
                   <div class="text-end mt-1" style="font-size:0.7rem;opacity:0.8;">
-                    {{ msg.sent_at|time:"H:i" }}
+                    {{ msg.sent_at|time:"H:i" }} {% if msg.is_read %}<i class="bi bi-check2-all"></i>{% else %}<i class="bi bi-check2"></i>{% endif %}
                   </div>
                 </div>
               </div>
@@ -64,7 +67,10 @@
               <div class="d-flex justify-content-start mb-2">
                 <div class="px-3 py-2 rounded-4 bg-white border shadow-sm"
                      style="max-width:75%;">
-                  <div>{{ msg.content }}</div>
+                  {% if msg.content %}<div>{{ msg.content }}</div>{% endif %}
+                  {% if msg.attachment %}
+                    <div class="mt-1"><a href="{{ msg.attachment.url }}" target="_blank" class="small"><i class="bi bi-paperclip"></i> {{ msg.attachment_name }}</a></div>
+                  {% endif %}
                   <div class="text-muted mt-1" style="font-size:0.7rem;">
                     {{ msg.sent_at|time:"H:i" }}
                   </div>
@@ -93,16 +99,19 @@
           </div>
         {% else %}
           <form method="POST" action="{% url 'send_message' %}"
-                class="d-flex gap-2">
+                class="d-flex gap-2" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="receiver" value="{{ other_user.username }}">
+            <label class="btn btn-outline-secondary mb-0" title="Attach a file">
+              <i class="bi bi-paperclip"></i>
+              <input type="file" name="attachment" hidden>
+            </label>
             <input type="text"
                    name="content"
                    class="form-control"
                    placeholder="Type a message..."
                    value="{% if request.GET.post_title %}Hi, I am interested in your task: '{{ request.GET.post_title }}'.{% endif %}"
-                   autocomplete="off"
-                   required>
+                   autocomplete="off">
             <button type="submit" class="btn btn-primary px-4 rounded-pill fw-medium">Send <i class="bi bi-send-fill ms-1"></i></button>
           </form>
         {% endif %}

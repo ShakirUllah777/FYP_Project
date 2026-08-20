@@ -28,9 +28,107 @@
   <ul class="nav-links">
     <li><a href="{% url 'tasks' %}" class="{% if request.resolver_match.url_name == 'tasks' %}active{% endif %}">Task Feed</a></li>
     <li><a href="{% url 'seniors' %}" class="{% if request.resolver_match.url_name == 'seniors' %}active{% endif %}">Find Seniors</a></li>
+    <li><a href="{% url 'community_list' %}" class="{% if request.resolver_match.url_name == 'community_list' or request.resolver_match.url_name == 'community_detail' %}active{% endif %}">Community</a></li>
     {% if user.is_authenticated %}
       <li><a href="#" data-bs-toggle="modal" data-bs-target="#addPostModal">Add Post</a></li>
       <li><a href="{% url 'my_posts' %}" class="{% if request.resolver_match.url_name == 'my_posts' %}active{% endif %}">My Posts</a></li>
+      <li class="dropdown more-dropdown">
+        <a href="#" class="dropdown-toggle more-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          More <i class="bi bi-chevron-down more-caret"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end more-menu">
+
+          <div class="more-menu-header">
+            <span class="more-menu-eyebrow">Workspace</span>
+            <span class="more-menu-title">Everything else, in one place</span>
+          </div>
+
+          <div class="more-menu-columns">
+
+            <div class="more-menu-col">
+              <div class="more-menu-col-title">Grow &amp; Connect</div>
+              <a class="more-menu-item" href="{% url 'recommended_teammates' %}">
+                <span class="more-menu-icon icon-violet"><i class="bi bi-people-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Recommended Teammates</span>
+                  <span class="more-menu-desc">Matched to your skills &amp; interests</span>
+                </span>
+              </a>
+              <a class="more-menu-item" href="{% url 'leaderboard' %}">
+                <span class="more-menu-icon icon-amber"><i class="bi bi-trophy-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Leaderboard</span>
+                  <span class="more-menu-desc">See who's topping the campus ranks</span>
+                </span>
+              </a>
+              <a class="more-menu-item" href="{% url 'my_bookmarks' %}">
+                <span class="more-menu-icon icon-rose"><i class="bi bi-bookmark-star-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Saved Posts</span>
+                  <span class="more-menu-desc">Tasks &amp; ideas you've bookmarked</span>
+                </span>
+                <span class="more-menu-badge badge-new">New</span>
+              </a>
+              <a class="more-menu-item" href="{% url 'my_saved_searches' %}">
+                <span class="more-menu-icon icon-blue"><i class="bi bi-funnel-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Saved Searches</span>
+                  <span class="more-menu-desc">Reuse your favorite task filters</span>
+                </span>
+              </a>
+            </div>
+
+            <div class="more-menu-col">
+              <div class="more-menu-col-title">Resources &amp; AI Tools</div>
+              <a class="more-menu-item" href="{% url 'resource_library' %}">
+                <span class="more-menu-icon icon-blue"><i class="bi bi-folder2-open"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">FYP Resources</span>
+                  <span class="more-menu-desc">Templates, guides &amp; documentation</span>
+                </span>
+              </a>
+              <a class="more-menu-item" href="{% url 'resume_skill_extractor' %}">
+                <span class="more-menu-icon icon-violet"><i class="bi bi-magic"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">AI Resume Extractor</span>
+                  <span class="more-menu-desc">Upload your CV, auto-fill your profile</span>
+                </span>
+                <span class="more-menu-badge badge-ai">AI</span>
+              </a>
+              <a class="more-menu-item" href="{% url 'search_messages' %}">
+                <span class="more-menu-icon icon-green"><i class="bi bi-search"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Search Messages</span>
+                  <span class="more-menu-desc">Find any past conversation fast</span>
+                </span>
+              </a>
+
+              {% if request.user.profile.is_supervisor or request.user.is_staff %}
+                <div class="more-menu-col-title more-menu-col-title-spaced">Administration</div>
+                {% if request.user.profile.is_supervisor %}
+                  <a class="more-menu-item" href="{% url 'supervisor_dashboard' %}">
+                    <span class="more-menu-icon icon-navy"><i class="bi bi-mortarboard-fill"></i></span>
+                    <span class="more-menu-text">
+                      <span class="more-menu-name">Supervisor Dashboard</span>
+                      <span class="more-menu-desc">Track &amp; endorse student projects</span>
+                    </span>
+                  </a>
+                {% endif %}
+                {% if request.user.is_staff %}
+                  <a class="more-menu-item" href="{% url 'moderation_queue' %}">
+                    <span class="more-menu-icon icon-red"><i class="bi bi-shield-fill-check"></i></span>
+                    <span class="more-menu-text">
+                      <span class="more-menu-name">Moderation Queue</span>
+                      <span class="more-menu-desc">Review flagged users &amp; reports</span>
+                    </span>
+                  </a>
+                {% endif %}
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+      </li>
     {% else %}
       <li><a href="{% url 'home' %}#features">Features</a></li>
       <li><a href="{% url 'home' %}#how-it-works">How It Works</a></li>
@@ -96,6 +194,10 @@
     <button class="cs-quick" onclick="askQuick('How to post?')">How to post?</button>
     <button class="cs-quick" onclick="askQuick('How to message?')">How to message?</button>
     <button class="cs-quick" onclick="askQuick('How to add skills?')">Add skills?</button>
+    <button class="cs-quick" onclick="askQuick('How to upload resume?')">Upload resume?</button>
+    <button class="cs-quick" onclick="askQuick('How to save a post?')">Save a post?</button>
+    <button class="cs-quick" onclick="askQuick('What is a team workspace?')">Team workspace?</button>
+    <button class="cs-quick" onclick="askQuick('What is AI scope estimate?')">AI scope estimate?</button>
     <button class="cs-quick" onclick="askQuick('Is it free?')">Is it free?</button>
   </div>
   <div id="cs-typing">● ● ●</div>

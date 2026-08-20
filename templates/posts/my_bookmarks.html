@@ -1,0 +1,74 @@
+{% extends 'pages/base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold text-dark mb-0" style="font-size: 1.5rem;"><i class="bi bi-bookmark-star text-primary"></i> Saved Posts</h3>
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">Tasks and FYP ideas you've bookmarked to revisit later.</p>
+  </div>
+  <a href="{% url 'tasks' %}" class="btn btn-outline-primary btn-sm rounded-pill"><i class="bi bi-search"></i> Browse Task Feed</a>
+</div>
+
+{% if bookmarks %}
+  <div class="row">
+    {% for bm in bookmarks %}
+    {% with post=bm.post %}
+    <div class="col-md-6 mb-4">
+      <div class="card h-100 d-flex flex-column" style="border-left: 4px solid {% if post.post_type == 'fyp' %}var(--primary-blue){% else %}#10b981{% endif %} !important;">
+        <div class="card-body p-4 d-flex flex-column">
+
+          <div class="d-flex align-items-center gap-3 mb-3">
+            {% if post.author.profile.photo %}
+              <img src="{{ post.author.profile.photo.url }}" class="rounded-circle shadow-sm" width="44" height="44" style="object-fit:cover;">
+            {% else %}
+              <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:44px;height:44px;font-size:1.1rem;flex-shrink:0;background-color: var(--sidebar-bg);">
+                {{ post.author.first_name|first }}
+              </div>
+            {% endif %}
+            <div>
+              <a href="{% url 'user_profile' post.author.username %}" class="fw-bold text-decoration-none text-dark">{{ post.author.first_name }} {{ post.author.last_name }}</a>
+              <div class="text-muted" style="font-size: 0.82rem;">Saved {{ bm.created_at|timesince }} ago</div>
+            </div>
+            <div class="ms-auto">
+              <a href="{% url 'toggle_bookmark' post.pk %}" class="post-bookmark-btn is-saved" title="Remove from Saved Posts">
+                <i class="bi bi-bookmark-fill"></i>
+              </a>
+            </div>
+          </div>
+
+          <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none text-dark">
+            <h5 class="fw-bold mb-2" style="font-size: 1.1rem;">{{ post.title }}</h5>
+          </a>
+          <p class="text-muted mb-3" style="font-size: 0.95rem;">{{ post.description|truncatechars:120 }}</p>
+
+          {% if post.skills_required.all %}
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              {% for skill in post.skills_required.all %}
+                <span class="badge bg-light text-dark border">{{ skill.name }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+            <span class="badge" style="background-color: rgba(37, 99, 235, 0.08); color: var(--primary-blue); font-weight: 600;">
+              {{ post.get_post_type_display }}
+            </span>
+            <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary btn-sm px-4 rounded-pill fw-medium">View Post</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-bookmark-heart" style="font-size: 2.5rem; opacity: 0.35;"></i>
+    <h5 class="mt-3">No saved posts yet.</h5>
+    <p style="font-size: 0.9rem;">Tap the bookmark icon on any task to save it here for later.</p>
+    <a href="{% url 'tasks' %}" class="btn btn-primary mt-2 rounded-pill">Browse Task Feed</a>
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -26,4 +26,8 @@ urlpatterns = [
     path('', include('posts.urls')),
     path('', include('messaging.urls')),
     path('', include('assistant.urls')),
+    path('', include('reviews.urls')),
+    path('', include('collaboration.urls')),
+    path('', include('resources.urls')),
+    path('', include('community.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

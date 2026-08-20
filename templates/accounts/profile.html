@@ -20,8 +20,23 @@
 
         <h4 class="fw-bold mb-0">
           {{ profile.user.first_name }} {{ profile.user.last_name }}
+          {% if profile.is_verified %}<i class="bi bi-patch-check-fill text-primary" title="Verified email"></i>{% endif %}
         </h4>
         <p class="text-muted">@{{ profile.user.username }}</p>
+
+        {% if profile.is_supervisor %}
+          <span class="badge bg-dark mb-2"><i class="bi bi-mortarboard"></i> Supervisor</span>
+        {% endif %}
+        {% if profile.is_id_verified %}
+          <span class="badge bg-success mb-2"><i class="bi bi-shield-check"></i> ID Verified</span>
+        {% endif %}
+
+        {% if rating.average %}
+          <div class="mb-2">
+            <i class="bi bi-star-fill text-warning"></i> <strong>{{ rating.average }}</strong>
+            <span class="text-muted small">({{ rating.count }} review{{ rating.count|pluralize }})</span>
+          </div>
+        {% endif %}
 
         {% if profile.bio %}
           <p class="text-muted small">{{ profile.bio }}</p>
@@ -32,6 +47,7 @@
           <p><strong>Program:</strong> {{ profile.program }}</p>
           <p><strong>Department:</strong> {{ profile.department }}</p>
           <p><strong>Semester:</strong> {{ profile.semester }}</p>
+          <p><strong>Batch:</strong> {{ profile.batch|default:"-" }}</p>
           <p><strong>Looking For:</strong> {{ profile.get_looking_for_display }}</p>
           <p><strong>Availability:</strong> {{ profile.get_availability_display }}</p>
           {% if profile.github %}
@@ -44,21 +60,60 @@
               <a href="{{ profile.linkedin }}" target="_blank">View</a>
             </p>
           {% endif %}
+          {% if is_own and profile.resume %}
+            <p><strong>Resume:</strong>
+              <a href="{{ profile.resume.url }}" target="_blank"><i class="bi bi-file-earmark-text"></i> View uploaded file</a>
+              {% if profile.resume_updated_at %}<span class="text-muted d-block" style="font-size:0.75rem;">Uploaded {{ profile.resume_updated_at|timesince }} ago</span>{% endif %}
+            </p>
+          {% endif %}
         </div>
 
         {% if is_own %}
           <a href="{% url 'add_skills' %}" class="btn btn-outline-primary btn-sm w-100 mt-2">
             Edit Profile & Skills
           </a>
+          <a href="{% url 'resume_skill_extractor' %}" class="btn btn-outline-success btn-sm w-100 mt-2">
+            <i class="bi bi-magic"></i> {% if profile.resume %}Re-Scan Resume{% else %}Auto-Fill from Resume{% endif %}
+          </a>
+          {% if not profile.is_verified %}
+            <a href="{% url 'resend_verification' %}" class="btn btn-outline-warning btn-sm w-100 mt-2">
+              <i class="bi bi-envelope-exclamation"></i> Resend Verification Email
+            </a>
+          {% endif %}
         {% else %}
           <a href="{% url 'chat' viewed_user.username %}"
              class="btn btn-primary btn-sm w-100 mt-2">
             Message
           </a>
+          <div class="d-flex gap-2 mt-2">
+            <a href="{% url 'leave_review' viewed_user.username %}" class="btn btn-outline-warning btn-sm w-100">
+              <i class="bi bi-star"></i> Review
+            </a>
+            <a href="{% url 'report_user' viewed_user.username %}" class="btn btn-outline-danger btn-sm w-100">
+              <i class="bi bi-flag"></i> Report
+            </a>
+          </div>
         {% endif %}
 
       </div>
     </div>
+
+    {% if reviews %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Reviews</h6>
+        {% for review in reviews %}
+          <div class="border-bottom pb-2 mb-2">
+            <div class="d-flex justify-content-between">
+              <strong class="small">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</strong>
+              <span class="small">{% for i in review.stars_range %}<i class="bi bi-star-fill text-warning"></i>{% endfor %}</span>
+            </div>
+            {% if review.comment %}<p class="small text-muted mb-0">{{ review.comment }}</p>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
   </div>
 
   <!-- Right: Skills + Posts -->

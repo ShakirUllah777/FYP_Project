@@ -1,0 +1,34 @@
+{% extends 'pages/base.html' %}
+{% block content %}
+<h3 class="fw-bold mb-4">My Saved Searches</h3>
+{% if results %}
+  {% for search, posts in results %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <h6 class="fw-bold mb-0">{{ search.label }}</h6>
+          <small class="text-muted">
+            {% if search.skill %}Skill: {{ search.skill }}{% endif %}
+            {% if search.post_type %} · Type: {{ search.post_type }}{% endif %}
+            {% if not search.skill and not search.post_type %}All posts{% endif %}
+          </small>
+        </div>
+        <div>
+          <span class="badge bg-primary rounded-pill">{{ posts.count }} match{{ posts.count|pluralize }}</span>
+          <a href="{% url 'delete_saved_search' search.pk %}" class="btn btn-outline-danger btn-sm ms-2"
+             onclick="return confirm('Remove this saved search?')"><i class="bi bi-trash"></i></a>
+        </div>
+      </div>
+      {% for post in posts|slice:":3" %}
+        <a href="{% url 'post_detail' post.pk %}" class="d-block text-decoration-none text-dark small border-top pt-2 mt-2">
+          {{ post.title }} <span class="text-muted">· {{ post.created_at|timesince }} ago</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">You haven't saved any searches yet. Use the "Save this search" button on the Tasks Feed filters.</p>
+{% endif %}
+{% endblock %}

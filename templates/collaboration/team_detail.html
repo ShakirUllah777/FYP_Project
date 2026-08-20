@@ -1,0 +1,150 @@
+{% extends 'pages/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h3 class="fw-bold mb-1"><i class="bi bi-people-fill"></i> {{ team.name }}</h3>
+    <p class="text-muted mb-0">Workspace for <a href="{% url 'post_detail' team.post.pk %}">{{ team.post.title }}</a></p>
+  </div>
+  {% if is_owner %}
+  <form method="POST" action="{% url 'add_member' team.pk %}" class="d-flex gap-2">
+    {% csrf_token %}
+    <input type="text" name="username" class="form-control form-control-sm" placeholder="Add by username">
+    <button class="btn btn-outline-primary btn-sm">Add</button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="mb-4 d-flex flex-wrap gap-2">
+  {% for m in team.members.all %}
+    <span class="badge bg-light text-dark border px-3 py-2">
+      <i class="bi bi-person-circle"></i> {{ m.username }}
+    </span>
+  {% endfor %}
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-board">Task Board</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-milestones">Milestones</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files">Files</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-meetings">Meetings</button></li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- KANBAN BOARD -->
+  <div class="tab-pane fade show active" id="tab-board">
+    <form method="POST" action="{% url 'add_task' team.pk %}" class="card shadow-sm mb-3 p-3">
+      {% csrf_token %}
+      <div class="row g-2">
+        <div class="col-md-3">{{ task_form.title }}</div>
+        <div class="col-md-3">{{ task_form.assigned_to }}</div>
+        <div class="col-md-2">{{ task_form.priority }}</div>
+        <div class="col-md-2">{{ task_form.due_date }}</div>
+        <div class="col-md-2"><button class="btn btn-primary w-100 btn-sm">Add Task</button></div>
+      </div>
+    </form>
+
+    <div class="row">
+      {% for status, label in columns.items %}{% endfor %}
+      <div class="col-md-4">
+        <h6 class="fw-bold text-muted">TO DO</h6>
+        {% for task in columns.todo %}
+          {% include 'collaboration/_task_card.html' with task=task team=team %}
+        {% empty %}<p class="text-muted small">Nothing here.</p>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        <h6 class="fw-bold text-muted">IN PROGRESS</h6>
+        {% for task in columns.in_progress %}
+          {% include 'collaboration/_task_card.html' with task=task team=team %}
+        {% empty %}<p class="text-muted small">Nothing here.</p>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        <h6 class="fw-bold text-muted">DONE</h6>
+        {% for task in columns.done %}
+          {% include 'collaboration/_task_card.html' with task=task team=team %}
+        {% empty %}<p class="text-muted small">Nothing here.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- MILESTONES -->
+  <div class="tab-pane fade" id="tab-milestones">
+    <form method="POST" action="{% url 'add_milestone' team.pk %}" class="card shadow-sm mb-3 p-3">
+      {% csrf_token %}
+      <div class="row g-2">
+        <div class="col-md-4">{{ milestone_form.title }}</div>
+        <div class="col-md-4">{{ milestone_form.description }}</div>
+        <div class="col-md-2">{{ milestone_form.due_date }}</div>
+        <div class="col-md-2"><button class="btn btn-primary w-100 btn-sm">Add</button></div>
+      </div>
+    </form>
+
+    <div class="timeline-wrap position-relative ps-4" style="border-left: 3px solid #e2e8f0;">
+      {% for m in milestones %}
+        <div class="mb-4 position-relative">
+          <span class="position-absolute rounded-circle" style="left:-27px; top:4px; width:14px; height:14px; background: {% if m.status == 'completed' %}#10b981{% elif m.status == 'missed' %}#ef4444{% else %}#2563eb{% endif %};"></span>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{{ m.title }}</strong> <span class="text-muted small">- due {{ m.due_date }}</span>
+              {% if m.description %}<div class="text-muted small">{{ m.description }}</div>{% endif %}
+            </div>
+            <form method="POST" action="{% url 'update_milestone' team.pk m.pk %}">
+              {% csrf_token %}
+              <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                {% for code, label in m.STATUS_CHOICES %}
+                  <option value="{{ code }}" {% if m.status == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </form>
+          </div>
+        </div>
+      {% empty %}<p class="text-muted">No milestones yet - add your proposal, SRS, mid-evaluation, and defense dates above.</p>{% endfor %}
+    </div>
+  </div>
+
+  <!-- FILES -->
+  <div class="tab-pane fade" id="tab-files">
+    <form method="POST" action="{% url 'upload_file' team.pk %}" enctype="multipart/form-data" class="card shadow-sm mb-3 p-3">
+      {% csrf_token %}
+      <div class="row g-2">
+        <div class="col-md-5">{{ file_form.file }}</div>
+        <div class="col-md-5">{{ file_form.description }}</div>
+        <div class="col-md-2"><button class="btn btn-primary w-100 btn-sm">Upload</button></div>
+      </div>
+    </form>
+    <div class="list-group">
+      {% for f in files %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <a href="{{ f.file.url }}" target="_blank"><i class="bi bi-file-earmark-arrow-down"></i> {{ f.filename }}</a>
+            <div class="text-muted small">{{ f.description }} · by {{ f.uploaded_by.username }} · {{ f.uploaded_at|timesince }} ago</div>
+          </div>
+          <a href="{% url 'delete_file' team.pk f.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this file?')"><i class="bi bi-trash"></i></a>
+        </div>
+      {% empty %}<p class="text-muted">No files shared yet.</p>{% endfor %}
+    </div>
+  </div>
+
+  <!-- MEETINGS -->
+  <div class="tab-pane fade" id="tab-meetings">
+    <form method="POST" action="{% url 'schedule_meeting' team.pk %}" class="card shadow-sm mb-3 p-3">
+      {% csrf_token %}
+      <div class="row g-2">
+        <div class="col-md-3">{{ meeting_form.title }}</div>
+        <div class="col-md-5">{{ meeting_form.link }}</div>
+        <div class="col-md-3">{{ meeting_form.scheduled_for }}</div>
+        <div class="col-md-1"><button class="btn btn-primary w-100 btn-sm">Go</button></div>
+      </div>
+    </form>
+    <div class="list-group">
+      {% for meeting in meetings %}
+        <a href="{{ meeting.link }}" target="_blank" class="list-group-item list-group-item-action">
+          <i class="bi bi-camera-video"></i> <strong>{{ meeting.title }}</strong>
+          <span class="text-muted small">- {{ meeting.scheduled_for }}</span>
+        </a>
+      {% empty %}<p class="text-muted">No calls scheduled. Generate a Google Meet/Zoom link and paste it above.</p>{% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

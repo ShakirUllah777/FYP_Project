@@ -45,6 +45,10 @@ INSTALLED_APPS = [
     'messaging',
     'assistant',
     'pages',
+    'reviews',
+    'collaboration',
+    'resources',
+    'community',
 ]
 
 MIDDLEWARE = [
@@ -84,12 +88,8 @@ WSGI_APPLICATION = 'collabspace.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -145,4 +145,21 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/tasks/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# --- Email (used for email verification + login OTP) ---
+# Defaults to the console backend so verification/OTP emails print to the
+# runserver terminal during development/demo instead of requiring a real
+# SMTP account. Set EMAIL_BACKEND in your .env to switch to real SMTP.
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@collabspace.local')
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+
+# --- AI (used by the assistant app for real LLM-backed suggestions) ---
+# If unset, the assistant app gracefully falls back to its built-in
+# rule-based suggestions so the project still runs without an API key.
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
 

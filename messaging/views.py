@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 
 from .models import Message, Block
 from accounts.models import Profile
@@ -58,7 +59,9 @@ def send_message(request):
     if request.method == 'POST':
         receiver_username = request.POST.get('receiver')
         content           = request.POST.get('content', '').strip()
-        if content:
+        attachment        = request.FILES.get('attachment')
+
+        if content or attachment:
             receiver = get_object_or_404(User, username=receiver_username)
 
             is_blocked = Block.objects.filter(blocker=request.user, blocked=receiver).exists()
@@ -71,10 +74,27 @@ def send_message(request):
             Message.objects.create(
                 sender=request.user,
                 receiver=receiver,
-                content=content
+                content=content,
+                attachment=attachment,
             )
         return redirect('chat', username=receiver_username)
     return redirect('inbox')
+
+
+@login_required
+def search_messages(request):
+    """Full-text-ish search across the logged-in user's own conversation
+    history (feature: message search)."""
+    query = request.GET.get('q', '').strip()
+    results = []
+    if query:
+        results = Message.objects.filter(
+            Q(sender=request.user) | Q(receiver=request.user)
+        ).filter(content__icontains=query).select_related('sender', 'receiver').order_by('-sent_at')[:50]
+
+    return render(request, 'messaging/search_messages.html', {
+        'query': query, 'results': results,
+    })
 
 
 @login_required
