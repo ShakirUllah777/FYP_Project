@@ -1,0 +1,21 @@
+<div class="card shadow-sm mb-2">
+  <div class="card-body py-2 px-3">
+    <div class="d-flex justify-content-between align-items-start">
+      <strong class="small">{{ task.title }}</strong>
+      <a href="{% url 'delete_task' team.pk task.pk %}" class="text-danger" onclick="return confirm('Delete task?')"><i class="bi bi-x-lg small"></i></a>
+    </div>
+    {% if task.description %}<div class="text-muted small">{{ task.description|truncatechars:60 }}</div>{% endif %}
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-warning text-dark{% else %}bg-secondary{% endif %}" style="font-size:0.65rem;">{{ task.get_priority_display }}</span>
+      {% if task.assigned_to %}<span class="text-muted small">{{ task.assigned_to.username }}</span>{% endif %}
+    </div>
+    <form method="POST" action="{% url 'update_task_status' team.pk task.pk %}" class="mt-2 update-task-status-form">
+      {% csrf_token %}
+      <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>To Do</option>
+        <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+        <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+      </select>
+    </form>
+  </div>
+</div>

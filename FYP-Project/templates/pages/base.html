@@ -1,0 +1,321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CollabSpace - Student Collaboration Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<!-- UNIFIED REDESIGN NAVBAR -->
+<nav class="landing-nav">
+  <a href="{% url 'home' %}" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    CollabSpace
+  </a>
+  <ul class="nav-links">
+    <li><a href="{% url 'tasks' %}" class="{% if request.resolver_match.url_name == 'tasks' %}active{% endif %}">Task Feed</a></li>
+    <li><a href="{% url 'seniors' %}" class="{% if request.resolver_match.url_name == 'seniors' %}active{% endif %}">Find Seniors</a></li>
+    <li><a href="{% url 'community_list' %}" class="{% if request.resolver_match.url_name == 'community_list' or request.resolver_match.url_name == 'community_detail' %}active{% endif %}">Community</a></li>
+    {% if user.is_authenticated %}
+      <li><a href="#" data-bs-toggle="modal" data-bs-target="#addPostModal">Add Post</a></li>
+      <li><a href="{% url 'my_posts' %}" class="{% if request.resolver_match.url_name == 'my_posts' %}active{% endif %}">My Posts</a></li>
+      <li class="dropdown more-dropdown">
+        <a href="#" class="dropdown-toggle more-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          More <i class="bi bi-chevron-down more-caret"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end more-menu">
+
+          <div class="more-menu-header">
+            <span class="more-menu-eyebrow">Workspace</span>
+            <span class="more-menu-title">Everything else, in one place</span>
+          </div>
+
+          <div class="more-menu-columns">
+
+            <div class="more-menu-col">
+              <div class="more-menu-col-title">Grow &amp; Connect</div>
+              <a class="more-menu-item" href="{% url 'recommended_teammates' %}">
+                <span class="more-menu-icon icon-violet"><i class="bi bi-people-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Recommended Teammates</span>
+                  <span class="more-menu-desc">Matched to your skills &amp; interests</span>
+                </span>
+              </a>
+              <a class="more-menu-item" href="{% url 'leaderboard' %}">
+                <span class="more-menu-icon icon-amber"><i class="bi bi-trophy-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Leaderboard</span>
+                  <span class="more-menu-desc">See who's topping the campus ranks</span>
+                </span>
+              </a>
+              <a class="more-menu-item" href="{% url 'my_bookmarks' %}">
+                <span class="more-menu-icon icon-rose"><i class="bi bi-bookmark-star-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Saved Posts</span>
+                  <span class="more-menu-desc">Tasks &amp; ideas you've bookmarked</span>
+                </span>
+                <span class="more-menu-badge badge-new">New</span>
+              </a>
+              <a class="more-menu-item" href="{% url 'my_saved_searches' %}">
+                <span class="more-menu-icon icon-blue"><i class="bi bi-funnel-fill"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Saved Searches</span>
+                  <span class="more-menu-desc">Reuse your favorite task filters</span>
+                </span>
+              </a>
+            </div>
+
+            <div class="more-menu-col">
+              <div class="more-menu-col-title">Resources &amp; AI Tools</div>
+              <a class="more-menu-item" href="{% url 'resource_library' %}">
+                <span class="more-menu-icon icon-blue"><i class="bi bi-folder2-open"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">FYP Resources</span>
+                  <span class="more-menu-desc">Templates, guides &amp; documentation</span>
+                </span>
+              </a>
+              <a class="more-menu-item" href="{% url 'resume_skill_extractor' %}">
+                <span class="more-menu-icon icon-violet"><i class="bi bi-magic"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">AI Resume Extractor</span>
+                  <span class="more-menu-desc">Upload your CV, auto-fill your profile</span>
+                </span>
+                <span class="more-menu-badge badge-ai">AI</span>
+              </a>
+              <a class="more-menu-item" href="{% url 'search_messages' %}">
+                <span class="more-menu-icon icon-green"><i class="bi bi-search"></i></span>
+                <span class="more-menu-text">
+                  <span class="more-menu-name">Search Messages</span>
+                  <span class="more-menu-desc">Find any past conversation fast</span>
+                </span>
+              </a>
+
+              {% if request.user.profile.is_supervisor or request.user.is_staff %}
+                <div class="more-menu-col-title more-menu-col-title-spaced">Administration</div>
+                {% if request.user.profile.is_supervisor %}
+                  <a class="more-menu-item" href="{% url 'supervisor_dashboard' %}">
+                    <span class="more-menu-icon icon-navy"><i class="bi bi-mortarboard-fill"></i></span>
+                    <span class="more-menu-text">
+                      <span class="more-menu-name">Supervisor Dashboard</span>
+                      <span class="more-menu-desc">Track &amp; endorse student projects</span>
+                    </span>
+                  </a>
+                {% endif %}
+                {% if request.user.is_staff %}
+                  <a class="more-menu-item" href="{% url 'moderation_queue' %}">
+                    <span class="more-menu-icon icon-red"><i class="bi bi-shield-fill-check"></i></span>
+                    <span class="more-menu-text">
+                      <span class="more-menu-name">Moderation Queue</span>
+                      <span class="more-menu-desc">Review flagged users &amp; reports</span>
+                    </span>
+                  </a>
+                {% endif %}
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+      </li>
+    {% else %}
+      <li><a href="{% url 'home' %}#features">Features</a></li>
+      <li><a href="{% url 'home' %}#how-it-works">How It Works</a></li>
+    {% endif %}
+  </ul>
+  <div class="nav-cta">
+    {% if user.is_authenticated %}
+      <a href="{% url 'inbox' %}" class="nav-icon-btn" aria-label="Messages" title="Messages">
+        {% if unread_count > 0 %}
+          <span class="nav-dot"></span>
+        {% endif %}
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </a>
+      <a href="{% url 'my_profile' %}" class="nav-avatar-btn" aria-label="Profile" title="{{ request.user.first_name }} {{ request.user.last_name }}">
+        {% if request.user.profile.photo %}
+          <img src="{{ request.user.profile.photo.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+        {% else %}
+          {{ request.user.first_name|first|upper }}
+        {% endif %}
+      </a>
+      <a href="{% url 'logout' %}" class="btn-ghost">Logout</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="btn-ghost {% if request.resolver_match.url_name == 'login' %}active{% endif %}">Sign In</a>
+      <a href="{% url 'register' %}" class="btn-primary-nav {% if request.resolver_match.url_name == 'register' %}active{% endif %}">Get Started →</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% if messages %}
+  <div class="container mt-3">
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show rounded-3 shadow-sm border-0 mb-2" id="auto-alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<main class="{% if request.resolver_match.url_name != 'home' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}container py-4{% endif %}">
+  {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- AI Assistant Popup (Available for all users) -->
+<button id="cs-bubble" onclick="toggleChat()" title="Ask CollabSpace Assistant">
+  <span id="cs-bubble-icon">💬</span>
+</button>
+
+<div id="cs-window">
+  <div id="cs-header">
+    <div class="cs-title">🤖 CollabSpace Assistant</div>
+    <button id="cs-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div id="cs-messages">
+    <div class="cs-msg bot">
+      👋 Hi{% if user.is_authenticated %} <strong>{{ request.user.first_name }}</strong>{% endif %}!
+      Ask me anything about how to use CollabSpace!
+    </div>
+  </div>
+  <div class="cs-quick-btns">
+    <button class="cs-quick" onclick="askQuick('How to post?')">How to post?</button>
+    <button class="cs-quick" onclick="askQuick('How to message?')">How to message?</button>
+    <button class="cs-quick" onclick="askQuick('How to add skills?')">Add skills?</button>
+    <button class="cs-quick" onclick="askQuick('How to upload resume?')">Upload resume?</button>
+    <button class="cs-quick" onclick="askQuick('How to save a post?')">Save a post?</button>
+    <button class="cs-quick" onclick="askQuick('What is a team workspace?')">Team workspace?</button>
+    <button class="cs-quick" onclick="askQuick('What is AI scope estimate?')">AI scope estimate?</button>
+    <button class="cs-quick" onclick="askQuick('Is it free?')">Is it free?</button>
+  </div>
+  <div id="cs-typing">● ● ●</div>
+  <div id="cs-input-row">
+    <input type="text" id="cs-input" placeholder="Ask a question..."
+           onkeydown="if(event.key==='Enter') sendChat()">
+    <button id="cs-send" onclick="sendChat()">Send</button>
+  </div>
+</div>
+<script>
+  window.CHATBOT_URL = "{% url 'chatbot' %}";
+</script>
+
+{% if user.is_authenticated and global_post_form %}
+<div class="modal fade modal-create-post" id="addPostModal" tabindex="-1" aria-labelledby="addPostModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" id="createPostModalDialog">
+    <div class="modal-content">
+      <!-- Modal Header with Expand/Extend toggle button -->
+      <div class="modal-create-header">
+        <h5 class="modal-create-title" id="addPostModalLabel">
+          <span class="header-icon"><i class="bi bi-pencil-square"></i></span>
+          Create a New Post
+        </h5>
+        <div class="modal-header-actions">
+          <button type="button" class="btn-expand-modal" id="modalExpandToggle" onclick="toggleModalExpand()" title="Expand editor workspace mode">
+            <i class="bi bi-arrows-angle-expand" id="expandToggleIcon"></i>
+            <span id="expandToggleText">Expand Editor</span>
+          </button>
+          <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Close" title="Close">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-create-body">
+        <div class="post-create-grid" id="postCreateGrid">
+          
+          <!-- Left Column: Form & AI Suggester -->
+          <div class="post-form-panel">
+            
+            <!-- AI Suggester Card -->
+            <div class="ai-suggester-card">
+              <div class="ai-card-header">
+                <div class="ai-card-title">
+                  <span>🤖</span> AI Suggester
+                  <span class="ai-card-badge">BETA</span>
+                </div>
+              </div>
+              <div class="ai-input-group">
+                <input type="text" id="ai-keywords" class="ai-input-field" placeholder="Type keywords (e.g. AI, Fullstack, Mobile)...">
+                <button type="button" onclick="getAISuggestion()" id="ai-btn" class="ai-suggest-btn">
+                  ✨ Suggest
+                </button>
+              </div>
+              <div id="ai-loading" class="mt-2 text-warning" style="display:none; font-size:0.75rem;"><i class="bi bi-hourglass-split"></i> Generating smart project content...</div>
+              <div id="ai-success" class="mt-2" style="display:none;"><span class="badge bg-success text-white" style="font-size:0.7rem;">✨ Title & Description Filled!</span></div>
+
+              <!-- Quick Keyword Presets -->
+              <div class="ai-presets-row">
+                <span class="ai-presets-label">Popular:</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('Machine Learning')">🤖 ML & AI</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('Web Development')">💻 Fullstack Web</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('Mobile App')">📱 Flutter / React Native</span>
+                <span class="ai-preset-chip" onclick="selectAiChip('UI UX Design')">🎨 UI/UX Design</span>
+              </div>
+            </div>
+
+            <!-- Django Post Form -->
+            <form method="POST" action="{% url 'add_post' %}" id="createPostForm">
+              {% csrf_token %}
+              
+              <div class="row gx-3">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label-custom">Title <span class="text-danger">*</span></label>
+                  {{ global_post_form.title }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label-custom">Post Type <span class="text-danger">*</span></label>
+                  {{ global_post_form.post_type }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label-custom">Description <span class="text-danger">*</span></label>
+                {{ global_post_form.description }}
+              </div>
+
+              <div class="row gx-3">
+                <div class="col-md-7 mb-3">
+                  <label class="form-label-custom">Skills Required</label>
+                  {{ global_post_form.skills_required }}
+                </div>
+                <div class="col-md-5 mb-3">
+                  <label class="form-label-custom">Deadline</label>
+                  {{ global_post_form.deadline }}
+                </div>
+              </div>
+
+              <button type="submit" class="btn-publish-post mt-2">
+                <i class="bi bi-send-fill"></i> Publish Post
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  window.AI_SUGGEST_URL = "{% url 'ai_suggest' %}";
+</script>
+
+<script src="{% static 'js/base.js' %}"></script>
+</body>
+</html>
