@@ -104,7 +104,7 @@ FALLBACK_CHAT_RESPONSES = {
     'salam': 'Walaikum Assalam! I am the CollabSpace assistant - ask me anything about the platform.',
     'good morning': 'Good morning! How can I help you with CollabSpace today?',
     'help': 'Sure! Here are some things I can help with:\n- How to register or login\n- How to post a project\n- How to find and message students\n- How to add your skills\n- What FYP and Paid Tasks mean\n- Communities, Team Workspaces, reviews, and reporting\n\nJust ask your question!',
-    'what can you do': 'I can answer questions about registering and logging in, posting or browsing projects, adding skills, using the AI Resume Extractor, saving posts and searches, communities, team workspaces, the leaderboard, reviews, and reporting. Just ask!',
+    'what can you do': 'I can answer questions about registering and logging in, posting or browsing projects, adding skills, using the AI Resume Extractor, saving posts, communities, team workspaces, reviews, and reporting. Just ask!',
     'thank you': 'You are welcome! Feel free to ask if you need anything else.',
     'thanks': 'Happy to help! Good luck with your FYP!',
     'bye': 'Goodbye! Come back anytime you need help with CollabSpace.',
@@ -142,7 +142,7 @@ FALLBACK_CHAT_RESPONSES = {
     'design skills': 'The Web & UI/UX Design category covers UI/UX Design, Figma, Adobe XD, Wireframing & Prototyping, Frontend Development, and Responsive Web Design.',
     'security skills': 'The Cybersecurity & QA category covers Cybersecurity, Ethical Hacking & Pen Testing, Network Security, Cryptography, and Software Testing / QA.',
     'skill proficiency': 'When you add skills manually or via the Resume Extractor, you can set (or the AI will guess) a proficiency level - Beginner, Intermediate, or Advanced - based on how often it appears and the experience context in your resume.',
-    'what is department field': 'Department is your academic department, such as IT, CS, DS, SE, or EE - it shows on your profile and is used to filter the leaderboard.',
+    'what is department field': 'Department is your academic department, such as IT, CS, DS, SE, or EE - it shows on your profile.',
     'what is program field': 'Program is your degree program, such as BSSE, BSCS, BSDS, or BSIT - it appears on your profile card.',
     'what is semester field': 'Semester shows which semester (1 through 7) you are currently in, so teammates know where you are in your degree.',
     'what is batch field': 'Batch is your cohort label, like "Fall 2022" or "Spring 2023" - it helps other students find classmates from their own intake.',
@@ -190,9 +190,6 @@ FALLBACK_CHAT_RESPONSES = {
     'what does match sort mean': 'Sorting by Match ranks posts by how closely their required skills line up with the skills on your profile, showing your best fits first.',
     'match score': 'The percentage badge (e.g. "72% Match") on a post shows how well your added skills line up with the skills that post requires - the higher, the better the fit.',
     'how to clear filters': 'On the Task Feed, click the Clear button next to the filter dropdowns to reset back to all types and all skills.',
-    'how to save a search': 'Apply filters on the Tasks Feed and click "Save this search". You can revisit it anytime from More \u2192 Saved Searches instead of re-typing filters.',
-    'saved search': 'On the Tasks Feed, set your filters (type, skill, sort) then click "Save this search" to store it. Access all your saved searches from More \u2192 Saved Searches.',
-    'how to delete a saved search': 'Go to More \u2192 Saved Searches, find the search you want to remove, and click the delete/remove option next to it.',
 
     # --- Saved Posts / Bookmarks ---
     'saved posts': 'Tap the bookmark icon on any post in the Tasks feed or post detail page to save it for later. Find everything you have saved under More \u2192 Saved Posts.',
@@ -205,8 +202,6 @@ FALLBACK_CHAT_RESPONSES = {
     'how to message': 'Find a post you like in the Tasks feed and click the Message button on that post. You can also click on a student username to view their profile and message them from there.',
     'how to chat': 'Click Messages in the navbar to see your inbox. Click any contact to open the chat. Type your message and press Send.',
     'how to find messages': 'Click Messages in the top navbar to open your inbox. All your conversations will be listed there.',
-    'how to search messages': 'Go to More \u2192 Search Messages, then type a keyword to find a specific past conversation quickly.',
-    'search messages': 'The Search Messages tool (under More) lets you find any past conversation by keyword instead of scrolling through your whole inbox.',
     'can i message anyone': 'Yes, once logged in you can message any student on the platform, either from their profile page or from a post they have created.',
 
     # --- Communities ---
@@ -225,16 +220,6 @@ FALLBACK_CHAT_RESPONSES = {
     'game development community': 'The Game Development community is for students building games or interactive experiences with Unity or Unreal Engine.',
     'how do i become a community member': 'You automatically qualify for a community once you add a matching skill to your profile, or you can manually click "Join Community" on that community page anytime.',
     'community open posts': 'Each community page shows a list of open FYP and Paid Task posts that require skills related to that community, so you can find relevant opportunities faster.',
-
-    # --- Recommended Teammates & Leaderboard ---
-    'recommended teammates': 'Go to More \u2192 Recommended Teammates to see students whose skills best complement yours for FYP or paid work, ranked by match score.',
-    'how are teammates recommended': 'CollabSpace compares your skills to other students, prioritising people who bring new, complementary skills while also sharing some common ground with you.',
-    'no teammate recommendations': 'If you have not added skills yet, or there are no strong matches, Recommended Teammates falls back to showing the platform\u2019s most active and highly-rated students instead.',
-    'leaderboard': 'The Leaderboard (under More) ranks students by activity, ratings, and completed collaborations, so you can see who is most active and trusted on the platform.',
-    'how is leaderboard score calculated': 'Your Leaderboard Activity Score combines posts created, completed collaborations, team memberships, and your average review rating and review count, each weighted differently.',
-    'what is activity score': 'Activity Score is a single number on the Leaderboard reflecting how active and trusted you are - it rewards completed work and good ratings more than just post volume.',
-    'how to filter leaderboard by department': 'On the Leaderboard page, use the department dropdown at the top right to filter the rankings to a specific department.',
-    'what do gold silver bronze mean': 'On the Leaderboard, the top three students are shown on a podium with gold, silver, and bronze medals for ranks 1, 2, and 3.',
 
     # --- Team Workspace ---
     'what is a team workspace': 'Once you agree to collaborate on a post, click "Start Team Workspace" to get a shared task board, milestones, file sharing, and meeting scheduling for that project.',
@@ -286,7 +271,7 @@ def _fallback_chat(question):
         if key in question:
             return value
     return ("I am not sure about that yet. Here are some things I can help with: registering, "
-            "adding skills, the AI Resume Extractor & profile auto-fill, saving posts, saved searches, "
+            "adding skills, the AI Resume Extractor & profile auto-fill, saved posts, "
             "posting a project, messaging students, team workspaces, reviews, or FYP vs Paid Tasks. "
             "Try asking one of those!")
 
@@ -337,8 +322,7 @@ def chatbot_reply(question):
             "paid tasks. Answer briefly (2-4 sentences), in plain text (no markdown), and "
             "stay strictly on topic: registering, login/OTP, skills, the AI Resume Extractor "
             "(upload a PDF/DOCX/TXT resume to auto-detect skills and auto-fill bio/GitHub/"
-            "LinkedIn), saved posts (bookmarks), saved searches, recommended teammates, the "
-            "leaderboard, posts, messaging, team workspaces, supervisor endorsements, "
+            "LinkedIn), saved posts (bookmarks), posts, messaging, team workspaces, supervisor endorsements, "
             "moderation/reporting, reviews, and general platform usage. If asked something "
             "unrelated, politely redirect to what you can help with."
         )

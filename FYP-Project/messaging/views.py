@@ -82,22 +82,6 @@ def send_message(request):
 
 
 @login_required
-def search_messages(request):
-    """Full-text-ish search across the logged-in user's own conversation
-    history (feature: message search)."""
-    query = request.GET.get('q', '').strip()
-    results = []
-    if query:
-        results = Message.objects.filter(
-            Q(sender=request.user) | Q(receiver=request.user)
-        ).filter(content__icontains=query).select_related('sender', 'receiver').order_by('-sent_at')[:50]
-
-    return render(request, 'messaging/search_messages.html', {
-        'query': query, 'results': results,
-    })
-
-
-@login_required
 def toggle_block(request, username):
     if request.method == 'POST':
         other_user = get_object_or_404(User, username=username)

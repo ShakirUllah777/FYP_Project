@@ -47,20 +47,6 @@
 
             <div class="more-menu-col">
               <div class="more-menu-col-title">Grow &amp; Connect</div>
-              <a class="more-menu-item" href="{% url 'recommended_teammates' %}">
-                <span class="more-menu-icon icon-violet"><i class="bi bi-people-fill"></i></span>
-                <span class="more-menu-text">
-                  <span class="more-menu-name">Recommended Teammates</span>
-                  <span class="more-menu-desc">Matched to your skills &amp; interests</span>
-                </span>
-              </a>
-              <a class="more-menu-item" href="{% url 'leaderboard' %}">
-                <span class="more-menu-icon icon-amber"><i class="bi bi-trophy-fill"></i></span>
-                <span class="more-menu-text">
-                  <span class="more-menu-name">Leaderboard</span>
-                  <span class="more-menu-desc">See who's topping the campus ranks</span>
-                </span>
-              </a>
               <a class="more-menu-item" href="{% url 'my_bookmarks' %}">
                 <span class="more-menu-icon icon-rose"><i class="bi bi-bookmark-star-fill"></i></span>
                 <span class="more-menu-text">
@@ -68,13 +54,6 @@
                   <span class="more-menu-desc">Tasks &amp; ideas you've bookmarked</span>
                 </span>
                 <span class="more-menu-badge badge-new">New</span>
-              </a>
-              <a class="more-menu-item" href="{% url 'my_saved_searches' %}">
-                <span class="more-menu-icon icon-blue"><i class="bi bi-funnel-fill"></i></span>
-                <span class="more-menu-text">
-                  <span class="more-menu-name">Saved Searches</span>
-                  <span class="more-menu-desc">Reuse your favorite task filters</span>
-                </span>
               </a>
             </div>
 
@@ -94,13 +73,6 @@
                   <span class="more-menu-desc">Upload your CV, auto-fill your profile</span>
                 </span>
                 <span class="more-menu-badge badge-ai">AI</span>
-              </a>
-              <a class="more-menu-item" href="{% url 'search_messages' %}">
-                <span class="more-menu-icon icon-green"><i class="bi bi-search"></i></span>
-                <span class="more-menu-text">
-                  <span class="more-menu-name">Search Messages</span>
-                  <span class="more-menu-desc">Find any past conversation fast</span>
-                </span>
               </a>
 
               {% if request.user.profile.is_supervisor or request.user.is_staff %}

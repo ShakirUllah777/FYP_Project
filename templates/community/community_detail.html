@@ -1,118 +1,340 @@
 {% extends 'pages/base.html' %}
 {% block extra_css %}
 <style>
-  .comm-banner {
+  .comm-detail-banner {
     border-radius: 20px;
-    padding: 30px;
+    padding: 28px 32px;
     color: #fff;
-    margin-bottom: 26px;
-    background: linear-gradient(135deg, {{ community.color }} 0%, {{ community.color }}b3 100%);
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 24px;
     flex-wrap: wrap;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   }
-  .comm-banner-icon {
-    width: 66px; height: 66px; border-radius: 18px;
-    background: rgba(255,255,255,0.18);
+  .comm-detail-logo-img {
+    width: 72px; height: 72px; border-radius: 18px;
+    object-fit: cover; border: 2px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+  .comm-detail-logo-fallback {
+    width: 72px; height: 72px; border-radius: 18px;
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    color: #fff; font-weight: 700; font-size: 2rem;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.7rem; flex-shrink: 0;
+    flex-shrink: 0; box-shadow: 0 6px 16px rgba(37,99,235,0.3);
   }
-  .comm-banner h2 { font-family:'Clash Display', sans-serif; font-weight:600; margin-bottom: 2px; }
-  .comm-banner p { opacity: 0.92; margin-bottom: 0; }
-  .comm-banner .btn { flex-shrink: 0; margin-left: auto; }
+  .comm-detail-banner h2 {
+    font-family: 'Clash Display', sans-serif;
+    font-weight: 700; font-size: 1.8rem; margin-bottom: 4px;
+  }
+  .comm-detail-banner p { color: #94A3B8; margin-bottom: 0; font-size: 0.95rem; }
+  .comm-detail-banner .meta-info {
+    font-size: 0.88rem; color: #CBD5E1; display: flex; gap: 16px; align-items: center; margin-top: 8px;
+  }
 
-  .comm-member-card {
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #fff;
-    margin-bottom: 12px;
+  .post-create-card {
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
   }
-  .comm-member-card .avatar {
+  .post-card {
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    transition: all 0.25s ease;
+  }
+  .post-card:hover {
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.07);
+    border-color: #CBD5E1;
+  }
+  .post-author-avatar {
     width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   }
-  .comm-avatar-fallback {
+  .post-author-fallback {
     width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 700; background-color: var(--sidebar-bg);
+    color: #fff; font-weight: 700; font-size: 1rem;
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    box-shadow: 0 2px 6px rgba(37,99,235,0.25);
   }
+
+  .post-media-box {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #E2E8F0;
+    margin-top: 12px;
+    margin-bottom: 14px;
+    max-height: 380px;
+    background-color: #0F172A;
+    cursor: pointer;
+  }
+  .post-img {
+    width: 100%;
+    max-height: 380px;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .post-media-box:hover .post-img {
+    transform: scale(1.015);
+  }
+  .img-expand-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  .post-media-box:hover .img-expand-hint {
+    opacity: 1;
+  }
+
+  .comm-member-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid #F1F5F9;
+  }
+  .comm-member-item:last-child { border-bottom: none; }
 </style>
 {% endblock %}
+
 {% block content %}
 
-<div class="comm-banner">
-  <div class="comm-banner-icon"><i class="bi {{ community.icon }}"></i></div>
-  <div>
+<!-- Community Banner -->
+<div class="comm-detail-banner">
+  {% if community.logo %}
+    <img src="{{ community.logo.url }}" alt="{{ community.name }}" class="comm-detail-logo-img">
+  {% else %}
+    <div class="comm-detail-logo-fallback">{{ community.name|first|upper }}</div>
+  {% endif %}
+  <div class="flex-grow-1">
     <h2>{{ community.name }}</h2>
-    <p>{{ community.description }} &middot; {{ member_count }} member{{ member_count|pluralize }}</p>
+    <p>{{ community.description }}</p>
+    <div class="meta-info">
+      <span><i class="bi bi-people-fill text-primary me-1"></i> <strong>{{ member_count }}</strong> member{{ member_count|pluralize }}</span>
+      <span><i class="bi bi-chat-left-text-fill text-primary me-1"></i> <strong>{{ posts|length }}</strong> post{{ posts|length|pluralize }}</span>
+      {% if community.creator %}
+        <span><i class="bi bi-shield-check text-success me-1"></i> Creator: <strong>{{ community.creator.first_name }} {{ community.creator.last_name }}</strong></span>
+      {% endif %}
+    </div>
   </div>
   {% if request.user.is_authenticated %}
     <form method="POST" action="{% url 'community_toggle_join' community.slug %}">
       {% csrf_token %}
-      <button type="submit" class="btn {% if is_joined %}btn-light{% else %}btn-outline-light{% endif %} rounded-pill px-4 fw-semibold">
-        {% if is_joined %}<i class="bi bi-check2-circle"></i> Joined{% else %}<i class="bi bi-plus-lg"></i> Join Community{% endif %}
+      <button type="submit" class="btn {% if is_joined %}btn-light text-dark{% else %}btn-primary{% endif %} rounded-pill px-4 fw-semibold shadow-sm">
+        {% if is_joined %}
+          <i class="bi bi-check2-circle text-success me-1"></i> Joined
+        {% else %}
+          <i class="bi bi-plus-lg me-1"></i> Join Community
+        {% endif %}
       </button>
     </form>
   {% endif %}
 </div>
 
 <div class="row g-4">
-  <div class="col-lg-7">
-    <h5 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary"></i> Members</h5>
-    {% for m in members %}
-      <div class="comm-member-card">
-        {% if m.profile.photo %}
-          <img src="{{ m.profile.photo.url }}" class="avatar">
-        {% else %}
-          <div class="comm-avatar-fallback">{{ m.profile.user.first_name|first }}</div>
-        {% endif %}
-        <div class="flex-grow-1">
-          <a href="{% url 'user_profile' m.profile.user.username %}" class="fw-bold text-decoration-none text-dark">
-            {{ m.profile.user.first_name }} {{ m.profile.user.last_name }}
-          </a>
-          <div class="text-muted small">{{ m.profile.program }}{% if m.profile.department %} &middot; {{ m.profile.department }}{% endif %}</div>
-          {% if m.shared_skills %}
-            <div class="d-flex flex-wrap gap-1 mt-1">
-              {% for us in m.shared_skills|slice:":4" %}
-                <span class="badge bg-light text-dark border" style="font-size:0.68rem;">{{ us.skill.name }}</span>
-              {% endfor %}
+  <!-- Main Feed Column -->
+  <div class="col-lg-8">
+    <!-- Create Post Section -->
+    {% if request.user.is_authenticated %}
+      {% if is_joined %}
+        <div class="post-create-card">
+          <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-pencil-square text-primary me-2"></i> Create a Post in {{ community.name }}</h5>
+          <form method="POST" action="{% url 'create_community_post' community.slug %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+              {{ post_form.title }}
             </div>
-          {% endif %}
+            <div class="mb-3">
+              {{ post_form.content }}
+            </div>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="flex-grow-1 max-w-sm">
+                {{ post_form.image }}
+              </div>
+              <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold">
+                <i class="bi bi-send-fill me-1"></i> Post to Community
+              </button>
+            </div>
+          </form>
         </div>
-        {% if m.rating.average %}
-          <div class="text-nowrap small"><i class="bi bi-star-fill text-warning"></i> {{ m.rating.average }}</div>
+      {% else %}
+        <div class="alert alert-info rounded-4 border-0 shadow-sm p-4 d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h6 class="fw-bold mb-1"><i class="bi bi-info-circle-fill me-2"></i> Want to post in this community?</h6>
+            <p class="mb-0 small">Join {{ community.name }} to start discussions, ask questions, and share updates with members.</p>
+          </div>
+          <form method="POST" action="{% url 'community_toggle_join' community.slug %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold">Join Now</button>
+          </form>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <!-- Posts Feed Header -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-bold m-0"><i class="bi bi-newspaper text-primary me-2"></i> Community Posts Feed</h5>
+      <span class="badge bg-light text-dark border">{{ posts|length }} Post{{ posts|length|pluralize }}</span>
+    </div>
+
+    <!-- Posts Feed Items -->
+    {% for item in posts %}
+      <div class="post-card">
+        <!-- Author Info Header -->
+        <div class="d-flex align-items-center gap-3 mb-3">
+          {% if item.post.author.profile.photo %}
+            <img src="{{ item.post.author.profile.photo.url }}" class="post-author-avatar">
+          {% else %}
+            <div class="post-author-fallback">{{ item.post.author.first_name|first|upper|default:"U" }}</div>
+          {% endif %}
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center flex-wrap gap-1">
+              <h6 class="fw-bold mb-0 text-dark me-1" style="font-size: 0.98rem;">
+                {{ item.post.author.first_name }} {{ item.post.author.last_name }}
+              </h6>
+              {% if item.post.author == community.creator %}
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1" style="font-size: 0.65rem; font-weight: 600;">Creator</span>
+              {% endif %}
+            </div>
+            <div class="text-muted small">@{{ item.post.author.username }} &middot; {{ item.post.created_at|timesince }} ago</div>
+          </div>
+        </div>
+
+        <!-- Post Content -->
+        <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; line-height: 1.4;">{{ item.post.title }}</h5>
+        <p class="text-secondary style-preserve-lines mb-3" style="font-size: 0.95rem; line-height: 1.6;">{{ item.post.content }}</p>
+
+        <!-- Post Image Media -->
+        {% if item.post.image %}
+          <div class="post-media-box" onclick="openImageModal('{{ item.post.image.url }}', '{{ item.post.title|escapejs }}')">
+            <img src="{{ item.post.image.url }}" alt="{{ item.post.title }}" class="post-img">
+            <span class="img-expand-hint"><i class="bi bi-arrows-angle-expand me-1"></i> View Full Image</span>
+          </div>
         {% endif %}
+
+        <!-- Post Action Footer -->
+        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-3">
+          {% if request.user.is_authenticated %}
+            <a href="{% url 'toggle_post_like' item.post.id %}" class="btn btn-sm {% if item.is_liked %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-semibold">
+              <i class="bi {% if item.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %} me-1"></i>
+              {{ item.likes_count }} Like{{ item.likes_count|pluralize }}
+            </a>
+          {% else %}
+            <span class="text-muted small"><i class="bi bi-heart me-1"></i> {{ item.likes_count }} Like{{ item.likes_count|pluralize }}</span>
+          {% endif %}
+
+          <span class="text-muted small"><i class="bi bi-clock me-1"></i> {{ item.post.created_at|date:"M d, Y · g:i a" }}</span>
+        </div>
       </div>
     {% empty %}
-      <p class="text-muted">No members yet - be the first to join, or add matching skills to your profile.</p>
+      <div class="text-center py-5 bg-white rounded-4 border">
+        <i class="bi bi-chat-square-dots text-muted" style="font-size: 2.5rem; opacity: 0.4;"></i>
+        <h6 class="fw-bold mt-3 text-dark">No Posts Yet</h6>
+        <p class="text-muted small">No discussions have been posted in {{ community.name }} yet.</p>
+      </div>
     {% endfor %}
   </div>
 
-  <div class="col-lg-5">
-    <h5 class="fw-bold mb-3"><i class="bi bi-briefcase-fill text-primary"></i> Open in this space</h5>
-    {% for post in open_posts %}
-      <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none">
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body py-3">
-            <div class="d-flex justify-content-between align-items-start">
-              <h6 class="fw-bold text-dark mb-1">{{ post.title }}</h6>
-              <span class="badge" style="background-color: rgba(37,99,235,0.08); color: var(--primary-blue); font-weight:600; flex-shrink:0;">{{ post.get_post_type_display }}</span>
+  <!-- Sidebar Column -->
+  <div class="col-lg-4">
+    <!-- Creator Card -->
+    {% if community.creator %}
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold text-uppercase text-muted small mb-3" style="letter-spacing: 0.05em;">Community Creator</h6>
+          <div class="d-flex align-items-center gap-3">
+            {% if community.creator.profile.photo %}
+              <img src="{{ community.creator.profile.photo.url }}" class="post-author-avatar">
+            {% else %}
+              <div class="post-author-fallback">{{ community.creator.first_name|first|upper }}</div>
+            {% endif %}
+            <div>
+              <h6 class="fw-bold mb-0 text-dark">{{ community.creator.first_name }} {{ community.creator.last_name }}</h6>
+              <div class="text-muted small">@{{ community.creator.username }}</div>
             </div>
-            <p class="text-muted small mb-0">{{ post.description|truncatechars:90 }}</p>
           </div>
         </div>
-      </a>
-    {% empty %}
-      <p class="text-muted">No open posts in this space right now.</p>
-    {% endfor %}
-    <a href="{% url 'tasks' %}" class="btn btn-outline-primary btn-sm rounded-pill w-100">Browse full Task Feed</a>
+      </div>
+    {% endif %}
+
+    <!-- Members Sidebar Card -->
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="fw-bold text-dark m-0"><i class="bi bi-people-fill text-primary me-2"></i> Members</h6>
+          <span class="badge bg-light text-dark border">{{ member_count }}</span>
+        </div>
+
+        {% for membership in memberships %}
+          <div class="comm-member-item">
+            {% if membership.user.profile.photo %}
+              <img src="{{ membership.user.profile.photo.url }}" class="post-author-avatar" style="width:36px;height:36px;">
+            {% else %}
+              <div class="post-author-fallback" style="width:36px;height:36px;font-size:0.85rem;">{{ membership.user.first_name|first|upper }}</div>
+            {% endif %}
+            <div class="flex-grow-1">
+              <a href="{% url 'user_profile' membership.user.username %}" class="fw-bold text-dark text-decoration-none small">
+                {{ membership.user.first_name }} {{ membership.user.last_name }}
+              </a>
+              <div class="text-muted" style="font-size: 0.75rem;">@{{ membership.user.username }}</div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted small mb-0">No members in this community yet.</p>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
 
-<a href="{% url 'community_list' %}" class="d-inline-block mt-4 text-decoration-none"><i class="bi bi-arrow-left"></i> All Communities</a>
+<a href="{% url 'community_list' %}" class="d-inline-block mt-4 text-decoration-none text-muted fw-semibold">
+  <i class="bi bi-arrow-left me-1"></i> Back to Communities
+</a>
 
+<!-- Full Image Lightbox Modal -->
+<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 bg-transparent">
+      <div class="modal-body p-0 text-center position-relative">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Close"></button>
+        <img id="lightboxImage" src="" class="img-fluid rounded-4 shadow-lg" style="max-height: 85vh; object-fit: contain;">
+        <div id="lightboxCaption" class="text-white mt-2 small fw-semibold"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openImageModal(url, caption) {
+  var modalEl = document.getElementById('imageLightboxModal');
+  var imgEl = document.getElementById('lightboxImage');
+  var captionEl = document.getElementById('lightboxCaption');
+  if (modalEl && imgEl) {
+    imgEl.src = url;
+    if (captionEl) captionEl.textContent = caption || '';
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+}
+</script>
 {% endblock %}
+

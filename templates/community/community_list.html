@@ -1,88 +1,325 @@
 {% extends 'pages/base.html' %}
 {% block extra_css %}
 <style>
-  .community-hero {
-    background: linear-gradient(135deg, var(--blue) 0%, #4F8BFF 100%);
+  .comm-hero {
+    background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
     border-radius: 20px;
-    padding: 34px 30px;
+    padding: 36px 32px;
     color: #fff;
     margin-bottom: 28px;
     position: relative;
-    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   }
-  .community-hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 92% -10%, rgba(255,255,255,0.22), transparent 55%);
+  .comm-hero h2 {
+    font-family: 'Clash Display', sans-serif;
+    font-weight: 700;
+    font-size: 2.1rem;
+    margin-bottom: 8px;
   }
-  .community-hero h2 { font-family:'Clash Display', sans-serif; font-weight:600; margin-bottom:6px; }
-  .community-hero p { opacity: 0.9; margin-bottom: 0; max-width: 560px; }
+  .comm-hero p {
+    color: #94A3B8;
+    max-width: 620px;
+    margin-bottom: 0;
+    font-size: 0.98rem;
+  }
+
+  .comm-nav-tabs {
+    border-bottom: 2px solid var(--border, #E2E8F0);
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .comm-nav-tabs .nav-link-item {
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #64748B;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .comm-nav-tabs .nav-link-item:hover {
+    color: var(--primary-blue, #2563EB);
+  }
+  .comm-nav-tabs .nav-link-item.active {
+    color: var(--primary-blue, #2563EB);
+    border-bottom-color: var(--primary-blue, #2563EB);
+  }
+  .comm-nav-tabs .badge-count {
+    background: #E2E8F0;
+    color: #475569;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+  }
+  .comm-nav-tabs .nav-link-item.active .badge-count {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--primary-blue, #2563EB);
+  }
 
   .community-card {
     border-radius: 16px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border, #E2E8F0);
     background: #fff;
-    padding: 22px;
+    padding: 24px;
     height: 100%;
-    transition: transform 0.16s ease, box-shadow 0.16s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
+    position: relative;
   }
   .community-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 30px -10px rgba(11,15,26,0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.12);
   }
-  .community-card-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 1.3rem; margin-bottom: 14px;
+  .comm-logo-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    object-fit: cover;
+    border: 1px solid rgba(0,0,0,0.08);
   }
-  .community-card h5 { font-weight: 700; margin-bottom: 4px; }
-  .community-card p { color: var(--ink3); font-size: 0.87rem; flex-grow: 1; }
-  .community-stats { display: flex; gap: 14px; font-size: 0.8rem; color: var(--ink3); margin: 10px 0 14px; }
-  .community-stats strong { color: var(--ink); }
-  .community-joined-pill {
-    font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
-    padding: 3px 9px; border-radius: 20px; background: rgba(18,183,106,0.12); color: var(--green);
+  .comm-logo-fallback {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  }
+  .community-card h5 {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #0F172A;
+    margin-bottom: 6px;
+  }
+  .community-card .desc {
+    color: #64748B;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    flex-grow: 1;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .community-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid #F1F5F9;
+    font-size: 0.82rem;
+    color: #64748B;
+    margin-top: auto;
+  }
+  .creator-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    color: #475569;
+  }
+  .joined-badge {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
   }
 </style>
 {% endblock %}
-{% block content %}
 
-<div class="community-hero">
-  <span class="badge bg-light text-primary fw-semibold mb-2" style="letter-spacing:.03em;">COMMUNITIES</span>
-  <h2>Find your crowd</h2>
-  <p>Join a topic community to see who else on campus shares your interests, discover open FYP ideas and paid tasks in that space, and grow your network beyond a single post.</p>
+{% block content %}
+<div class="comm-hero d-flex justify-content-between align-items-center flex-wrap gap-3">
+  <div>
+    <span class="badge bg-primary-subtle text-primary fw-semibold mb-2 px-3 py-1 rounded-pill">COMMUNITIES</span>
+    <h2>Discover &amp; Join Student Communities</h2>
+    <p>Create your own community or connect with like-minded students to share updates, projects, and discussions.</p>
+  </div>
+  {% if user.is_authenticated %}
+    <button type="button" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#createCommunityModal">
+      <i class="bi bi-plus-lg me-1"></i> Create Community
+    </button>
+  {% else %}
+    <a href="{% url 'login' %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm fw-semibold">
+      <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Create Community
+    </a>
+  {% endif %}
 </div>
 
-<div class="row g-4">
-  {% for card in cards %}
-  <div class="col-md-6 col-lg-4">
-    <div class="community-card">
-      <div class="d-flex justify-content-between align-items-start">
-        <div class="community-card-icon" style="background: linear-gradient(135deg, {{ card.community.color }}, {{ card.community.color }}cc);">
-          <i class="bi {{ card.community.icon }}"></i>
+<!-- Community Tabs -->
+<div class="comm-nav-tabs">
+  <a href="?tab=my" class="nav-link-item {% if active_tab == 'my' %}active{% endif %}">
+    <i class="bi bi-person-heart"></i> My Communities
+    {% if my_communities.count %}<span class="badge-count">{{ my_communities.count }}</span>{% endif %}
+  </a>
+  <a href="?tab=explore" class="nav-link-item {% if active_tab == 'explore' %}active{% endif %}">
+    <i class="bi bi-compass"></i> Explore Communities
+    {% if explore_communities.count %}<span class="badge-count">{{ explore_communities.count }}</span>{% endif %}
+  </a>
+</div>
+
+<!-- Tab Contents -->
+{% if active_tab == 'my' %}
+  <!-- MY COMMUNITIES SECTION -->
+  <div class="row g-4 mb-5">
+    {% for community in my_communities %}
+      <div class="col-md-6 col-lg-4">
+        <div class="community-card">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            {% if community.logo %}
+              <img src="{{ community.logo.url }}" alt="{{ community.name }}" class="comm-logo-img">
+            {% else %}
+              <div class="comm-logo-fallback">{{ community.name|first|upper }}</div>
+            {% endif %}
+            <span class="joined-badge"><i class="bi bi-check-circle-fill"></i> Joined</span>
+          </div>
+
+          <h5><a href="{% url 'community_detail' community.slug %}" class="text-decoration-none text-dark">{{ community.name }}</a></h5>
+          <p class="desc">{{ community.description }}</p>
+
+          <div class="community-meta">
+            <span><i class="bi bi-people-fill me-1"></i> <strong>{{ community.member_count_num }}</strong> member{{ community.member_count_num|pluralize }}</span>
+            <span><i class="bi bi-chat-text-fill me-1"></i> <strong>{{ community.post_count_num }}</strong> post{{ community.post_count_num|pluralize }}</span>
+          </div>
+
+          <div class="mt-3">
+            <a href="{% url 'community_detail' community.slug %}" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-semibold">
+              Open Community <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
         </div>
-        {% if card.is_joined %}<span class="community-joined-pill">Joined</span>{% endif %}
       </div>
-      <h5>{{ card.community.name }}</h5>
-      <p>{{ card.community.description }}</p>
-      <div class="community-stats">
-        <span><strong>{{ card.member_count }}</strong> member{{ card.member_count|pluralize }}</span>
-        <span><strong>{{ card.open_posts }}</strong> open post{{ card.open_posts|pluralize }}</span>
+    {% empty %}
+      <div class="col-12 py-5 text-center bg-white rounded-4 border">
+        <i class="bi bi-people text-muted" style="font-size: 3rem; opacity: 0.4;"></i>
+        <h5 class="fw-bold mt-3 text-dark">No Joined Communities</h5>
+        <p class="text-muted max-w-md mx-auto">You haven't joined any communities yet. Explore communities created by other students or build your own!</p>
+        <div class="d-flex justify-content-center gap-2 mt-3">
+          <a href="?tab=explore" class="btn btn-primary rounded-pill px-4">Explore Communities</a>
+          {% if user.is_authenticated %}
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createCommunityModal">Create Community</button>
+          {% endif %}
+        </div>
       </div>
-      <a href="{% url 'community_detail' card.community.slug %}" class="btn btn-primary btn-sm rounded-pill w-100">
-        {% if card.is_skill_matched %}<i class="bi bi-stars"></i> Your community{% else %}Explore{% endif %}
-      </a>
+    {% endfor %}
+  </div>
+
+{% else %}
+  <!-- EXPLORE COMMUNITIES SECTION -->
+  <div class="row g-4 mb-5">
+    {% for community in explore_communities %}
+      <div class="col-md-6 col-lg-4">
+        <div class="community-card">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            {% if community.logo %}
+              <img src="{{ community.logo.url }}" alt="{{ community.name }}" class="comm-logo-img">
+            {% else %}
+              <div class="comm-logo-fallback">{{ community.name|first|upper }}</div>
+            {% endif %}
+            {% if community.creator %}
+              <span class="creator-badge small text-muted"><i class="bi bi-shield-check text-primary"></i> {{ community.creator.first_name|default:community.creator.username }}</span>
+            {% endif %}
+          </div>
+
+          <h5><a href="{% url 'community_detail' community.slug %}" class="text-decoration-none text-dark">{{ community.name }}</a></h5>
+          <p class="desc">{{ community.description }}</p>
+
+          <div class="community-meta">
+            <span><i class="bi bi-people-fill me-1"></i> <strong>{{ community.member_count_num }}</strong> member{{ community.member_count_num|pluralize }}</span>
+            <span><i class="bi bi-chat-text-fill me-1"></i> <strong>{{ community.post_count_num }}</strong> post{{ community.post_count_num|pluralize }}</span>
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <a href="{% url 'community_detail' community.slug %}" class="btn btn-light btn-sm rounded-pill flex-grow-1 fw-semibold text-dark border">
+              View
+            </a>
+            {% if user.is_authenticated %}
+              <form method="POST" action="{% url 'community_toggle_join' community.slug %}" class="flex-grow-1">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill w-100 fw-semibold">
+                  <i class="bi bi-plus-lg"></i> Join
+                </button>
+              </form>
+            {% else %}
+              <a href="{% url 'login' %}" class="btn btn-primary btn-sm rounded-pill flex-grow-1 fw-semibold">Join</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12 py-5 text-center bg-white rounded-4 border">
+        <i class="bi bi-compass text-muted" style="font-size: 3rem; opacity: 0.4;"></i>
+        <h5 class="fw-bold mt-3 text-dark">No Communities Found</h5>
+        <p class="text-muted max-w-md mx-auto">There are no communities available to explore right now. Be the first to create one!</p>
+        {% if user.is_authenticated %}
+          <button type="button" class="btn btn-primary rounded-pill px-4 mt-2" data-bs-toggle="modal" data-bs-target="#createCommunityModal">
+            <i class="bi bi-plus-lg me-1"></i> Create First Community
+          </button>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-primary rounded-pill px-4 mt-2">Sign In to Create Community</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+<!-- CREATE COMMUNITY MODAL -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="createCommunityModal" tabindex="-1" aria-labelledby="createCommunityModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-dark text-white p-4">
+        <h5 class="modal-header-title fw-bold m-0" id="createCommunityModalLabel">
+          <i class="bi bi-people-fill text-primary me-2"></i> Create a New Community
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'create_community' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Community Logo <span class="text-muted font-normal">(Optional)</span></label>
+            {{ form.logo }}
+            <div class="form-text">Upload a image (PNG, JPG, SVG) for your community logo.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Community Name <span class="text-danger">*</span></label>
+            {{ form.name }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+            {{ form.description }}
+          </div>
+        </div>
+        <div class="modal-footer bg-light p-3 border-top-0">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i> Create Community
+          </button>
+        </div>
+      </form>
     </div>
   </div>
-  {% empty %}
-    <div class="col-12 text-center text-muted py-5">
-      <i class="bi bi-people" style="font-size:2.2rem;opacity:.35;"></i>
-      <p class="mt-3">No communities yet.</p>
-    </div>
-  {% endfor %}
 </div>
+{% endif %}
 
 {% endblock %}
+

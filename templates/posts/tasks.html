@@ -30,30 +30,7 @@
       </select>
       <button type="submit" class="btn btn-outline-primary btn-sm">Filter</button>
       <a href="{% url 'tasks' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
-      <button type="button" class="btn btn-outline-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#saveSearchModal">
-        <i class="bi bi-bookmark-plus"></i> Save this search
-      </button>
     </form>
-  </div>
-</div>
-
-<!-- Save Search Modal -->
-<div class="modal fade" id="saveSearchModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="{% url 'save_search' %}">
-        {% csrf_token %}
-        <input type="hidden" name="skill" value="{{ request.GET.skill }}">
-        <input type="hidden" name="post_type" value="{{ request.GET.type }}">
-        <div class="modal-body">
-          <h6 class="fw-bold mb-2">Save this search</h6>
-          <input type="text" name="label" class="form-control" placeholder="e.g. Django FYP alerts">
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary btn-sm">Save</button>
-        </div>
-      </form>
-    </div>
   </div>
 </div>
 
