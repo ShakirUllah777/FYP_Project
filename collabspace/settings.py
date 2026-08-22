@@ -147,16 +147,16 @@ LOGIN_REDIRECT_URL = '/tasks/'
 LOGOUT_REDIRECT_URL = '/login/'
 
 # --- Email (used for email verification + login OTP) ---
-# Defaults to the console backend so verification/OTP emails print to the
-# runserver terminal during development/demo instead of requiring a real
-# SMTP account. Set EMAIL_BACKEND in your .env to switch to real SMTP.
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@collabspace.local')
-EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+# Automatically uses SMTP if EMAIL_HOST_USER is set in .env, else falls back to console backend.
+default_backend = 'django.core.mail.backends.smtp.EmailBackend' if os.getenv('EMAIL_HOST_USER') else 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', default_backend)
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', os.getenv('EMAIL_HOST_USER', 'no-reply@collabspace.local'))
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+
 
 # --- AI (used by the assistant app for real LLM-backed suggestions) ---
 # If unset, the assistant app gracefully falls back to its built-in

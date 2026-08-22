@@ -13,14 +13,20 @@ from .models import Profile, Skill, UserSkill, EmailVerification, SavedSearch
 from posts.models import Post
 
 
-def _send_verification_email(user):
+def _send_verification_email(user, request=None):
     verification, _ = EmailVerification.objects.get_or_create(
         user=user, defaults={'token': EmailVerification.generate_token()}
     )
     if not verification.token:
         verification.token = EmailVerification.generate_token()
         verification.save()
-    verify_url = f"/verify-email/{verification.token}/"
+    
+    if request:
+        domain = request.build_absolute_uri('/')[:-1]
+    else:
+        domain = getattr(settings, 'SITE_DOMAIN', 'http://127.0.0.1:8000')
+
+    verify_url = f"{domain}/verify-email/{verification.token}/"
     send_mail(
         subject='Verify your CollabSpace account',
         message=(
@@ -31,8 +37,9 @@ def _send_verification_email(user):
         ),
         from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@collabspace.local'),
         recipient_list=[user.email],
-        fail_silently=True,
+        fail_silently=False,
     )
+
 
 
 def register(request):
@@ -99,7 +106,7 @@ def register(request):
             last_name=last_name
         )
         Profile.objects.get_or_create(user=user)
-        _send_verification_email(user)
+        _send_verification_email(user, request)
 
         messages.success(request, 'Account created successfully! Check your email to verify your account, then login.')
         return redirect('login')
@@ -129,7 +136,7 @@ def resend_verification(request):
     if profile.is_verified:
         messages.info(request, 'Your account is already verified.')
     else:
-        _send_verification_email(request.user)
+        _send_verification_email(request.user, request)
         messages.success(request, 'Verification email re-sent.')
     return redirect('my_profile')
 
