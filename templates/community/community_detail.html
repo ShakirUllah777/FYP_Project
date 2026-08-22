@@ -113,6 +113,65 @@
     padding: 10px 0; border-bottom: 1px solid #F1F5F9;
   }
   .comm-member-item:last-child { border-bottom: none; }
+
+  /* Reactions Component Styles */
+  .reaction-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  .reaction-popover {
+    position: absolute;
+    bottom: 115%;
+    left: 0;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 30px;
+    padding: 4px 10px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px) scale(0.95);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+  }
+  .reaction-wrapper:hover .reaction-popover,
+  .reaction-popover:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+  .reaction-opt-btn {
+    background: none;
+    border: none;
+    font-size: 1.35rem;
+    padding: 4px 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .reaction-opt-btn:hover {
+    transform: scale(1.35);
+    background-color: #F1F5F9;
+  }
+  .reaction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #475569;
+  }
 </style>
 {% endblock %}
 
@@ -232,17 +291,76 @@
         {% endif %}
 
         <!-- Post Action Footer -->
-        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-3">
+        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-3 flex-wrap gap-2">
           {% if request.user.is_authenticated %}
-            <a href="{% url 'toggle_post_like' item.post.id %}" class="btn btn-sm {% if item.is_liked %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-semibold">
-              <i class="bi {% if item.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %} me-1"></i>
-              {{ item.likes_count }} Like{{ item.likes_count|pluralize }}
-            </a>
+            <div class="d-flex align-items-center gap-2">
+              <!-- Reaction Picker Wrapper (Like/Heart, Sad, Laughing) -->
+              <div class="reaction-wrapper" id="reaction-wrapper-{{ item.post.id }}">
+                <!-- Floating Popover Picker -->
+                <div class="reaction-popover">
+                  <button type="button" class="reaction-opt-btn js-react-btn" data-post-id="{{ item.post.id }}" data-reaction-type="like" title="Like (Heart) ❤️">
+                    ❤️
+                  </button>
+                  <button type="button" class="reaction-opt-btn js-react-btn" data-post-id="{{ item.post.id }}" data-reaction-type="sad" title="Sad 😢">
+                    😢
+                  </button>
+                  <button type="button" class="reaction-opt-btn js-react-btn" data-post-id="{{ item.post.id }}" data-reaction-type="laugh" title="Laughing 😂">
+                    😂
+                  </button>
+                </div>
+
+                <!-- Main Reaction Trigger Button -->
+                <button type="button" class="btn btn-sm {% if item.user_reaction and item.user_reaction != 'dislike' %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-semibold js-react-btn" data-post-id="{{ item.post.id }}" data-reaction-type="{% if item.user_reaction and item.user_reaction != 'dislike' %}{{ item.user_reaction }}{% else %}like{% endif %}" id="main-react-btn-{{ item.post.id }}">
+                  <span class="react-icon me-1">
+                    {% if item.user_reaction == 'sad' %}😢
+                    {% elif item.user_reaction == 'laugh' %}😂
+                    {% elif item.user_reaction == 'like' %}❤️
+                    {% else %}<i class="bi bi-heart"></i>
+                    {% endif %}
+                  </span>
+                  <span class="react-label">
+                    {% if item.user_reaction == 'sad' %}Sad
+                    {% elif item.user_reaction == 'laugh' %}Laughing
+                    {% elif item.user_reaction == 'like' %}Liked
+                    {% else %}Like
+                    {% endif %}
+                  </span>
+                </button>
+              </div>
+
+              <!-- Dislike Button -->
+              <button type="button" class="btn btn-sm {% if item.user_reaction == 'dislike' %}btn-dark{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-semibold js-react-btn" data-post-id="{{ item.post.id }}" data-reaction-type="dislike" id="dislike-btn-{{ item.post.id }}" title="Dislike 👎">
+                👎 <span class="dislike-label ms-1">{% if item.user_reaction == 'dislike' %}Disliked{% else %}Dislike{% endif %}</span>
+              </button>
+            </div>
           {% else %}
-            <span class="text-muted small"><i class="bi bi-heart me-1"></i> {{ item.likes_count }} Like{{ item.likes_count|pluralize }}</span>
+            <div class="d-flex align-items-center gap-2 text-muted small">
+              <i class="bi bi-heart me-1"></i> {{ item.likes_count }} Like{{ item.likes_count|pluralize }}
+            </div>
           {% endif %}
 
-          <span class="text-muted small"><i class="bi bi-clock me-1"></i> {{ item.post.created_at|date:"M d, Y · g:i a" }}</span>
+          <div class="d-flex align-items-center gap-3">
+            <!-- Reaction Badges Summary -->
+            <div class="d-flex align-items-center gap-1 flex-wrap" id="reaction-badges-{{ item.post.id }}">
+              {% if item.reactions_summary.like > 0 %}
+                <span class="reaction-badge" title="Likes">❤️ {{ item.reactions_summary.like }}</span>
+              {% endif %}
+              {% if item.reactions_summary.sad > 0 %}
+                <span class="reaction-badge" title="Sad">😢 {{ item.reactions_summary.sad }}</span>
+              {% endif %}
+              {% if item.reactions_summary.laugh > 0 %}
+                <span class="reaction-badge" title="Laughing">😂 {{ item.reactions_summary.laugh }}</span>
+              {% endif %}
+              {% if item.reactions_summary.dislike > 0 %}
+                <span class="reaction-badge" title="Dislikes">👎 {{ item.reactions_summary.dislike }}</span>
+              {% endif %}
+              {% if item.reactions_summary.total == 0 %}
+                <span class="text-muted small">0 reactions</span>
+              {% endif %}
+            </div>
+
+            <span class="text-muted small"><i class="bi bi-clock me-1"></i> {{ item.post.created_at|date:"M d, Y · g:i a" }}</span>
+          </div>
         </div>
       </div>
     {% empty %}
@@ -333,6 +451,109 @@ function openImageModal(url, caption) {
     if (captionEl) captionEl.textContent = caption || '';
     var modal = new bootstrap.Modal(modalEl);
     modal.show();
+  }
+}
+
+function getCsrfToken() {
+  var cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = cookies[i].trim();
+      if (cookie.substring(0, 10) === ('csrftoken=')) {
+        cookieValue = decodeURIComponent(cookie.substring(10));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.js-react-btn');
+    if (!btn) return;
+
+    e.preventDefault();
+    var postId = btn.getAttribute('data-post-id');
+    var reactionType = btn.getAttribute('data-reaction-type');
+    if (!postId || !reactionType) return;
+
+    var url = "/community/post/" + postId + "/like/";
+    var csrfToken = getCsrfToken();
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ reaction_type: reactionType })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) {
+        updatePostReactionUI(postId, data.user_reaction, data.reactions_summary);
+      }
+    })
+    .catch(function(err) {
+      console.error('Reaction request error:', err);
+    });
+  });
+});
+
+function updatePostReactionUI(postId, userReaction, summary) {
+  var mainBtn = document.getElementById('main-react-btn-' + postId);
+  var dislikeBtn = document.getElementById('dislike-btn-' + postId);
+  var badgesContainer = document.getElementById('reaction-badges-' + postId);
+
+  if (mainBtn) {
+    var iconSpan = mainBtn.querySelector('.react-icon');
+    var labelSpan = mainBtn.querySelector('.react-label');
+
+    if (userReaction === 'like') {
+      mainBtn.className = 'btn btn-sm btn-danger rounded-pill px-3 fw-semibold js-react-btn';
+      mainBtn.setAttribute('data-reaction-type', 'like');
+      if (iconSpan) iconSpan.innerHTML = '❤️';
+      if (labelSpan) labelSpan.textContent = 'Liked';
+    } else if (userReaction === 'sad') {
+      mainBtn.className = 'btn btn-sm btn-danger rounded-pill px-3 fw-semibold js-react-btn';
+      mainBtn.setAttribute('data-reaction-type', 'sad');
+      if (iconSpan) iconSpan.innerHTML = '😢';
+      if (labelSpan) labelSpan.textContent = 'Sad';
+    } else if (userReaction === 'laugh') {
+      mainBtn.className = 'btn btn-sm btn-danger rounded-pill px-3 fw-semibold js-react-btn';
+      mainBtn.setAttribute('data-reaction-type', 'laugh');
+      if (iconSpan) iconSpan.innerHTML = '😂';
+      if (labelSpan) labelSpan.textContent = 'Laughing';
+    } else {
+      mainBtn.className = 'btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold js-react-btn';
+      mainBtn.setAttribute('data-reaction-type', 'like');
+      if (iconSpan) iconSpan.innerHTML = '<i class="bi bi-heart"></i>';
+      if (labelSpan) labelSpan.textContent = 'Like';
+    }
+  }
+
+  if (dislikeBtn) {
+    var dislikeLabel = dislikeBtn.querySelector('.dislike-label');
+    if (userReaction === 'dislike') {
+      dislikeBtn.className = 'btn btn-sm btn-dark rounded-pill px-3 fw-semibold js-react-btn';
+      if (dislikeLabel) dislikeLabel.textContent = 'Disliked';
+    } else {
+      dislikeBtn.className = 'btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold js-react-btn';
+      if (dislikeLabel) dislikeLabel.textContent = 'Dislike';
+    }
+  }
+
+  if (badgesContainer && summary) {
+    var html = '';
+    if (summary.like > 0) html += '<span class="reaction-badge" title="Likes">❤️ ' + summary.like + '</span> ';
+    if (summary.sad > 0) html += '<span class="reaction-badge" title="Sad">😢 ' + summary.sad + '</span> ';
+    if (summary.laugh > 0) html += '<span class="reaction-badge" title="Laughing">😂 ' + summary.laugh + '</span> ';
+    if (summary.dislike > 0) html += '<span class="reaction-badge" title="Dislikes">👎 ' + summary.dislike + '</span> ';
+    if (summary.total === 0) html += '<span class="text-muted small">0 reactions</span>';
+    badgesContainer.innerHTML = html;
   }
 }
 </script>

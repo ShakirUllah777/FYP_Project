@@ -1,8 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+import json
 
 from .models import Community, CommunityMembership, CommunityPost, CommunityPostLike
 from .forms import CommunityForm, CommunityPostForm
@@ -91,8 +93,10 @@ def community_detail(request, slug):
     for p in posts_qs:
         posts.append({
             'post': p,
-            'likes_count': p.likes.count(),
+            'likes_count': p.likes_count(),
             'is_liked': p.is_liked_by(request.user) if request.user.is_authenticated else False,
+            'user_reaction': p.get_user_reaction(request.user) if request.user.is_authenticated else None,
+            'reactions_summary': p.reactions_summary(),
         })
 
     post_form = CommunityPostForm()
@@ -153,15 +157,60 @@ def create_community_post(request, slug):
 
 @login_required
 def toggle_post_like(request, post_id):
-    """Toggle like on a community post."""
+    """Toggle or set reaction (like/heart, sad, laugh, dislike) on a community post with AJAX support."""
     post = get_object_or_404(CommunityPost, id=post_id)
-    like_obj, created = CommunityPostLike.objects.get_or_create(post=post, user=request.user)
     
-    if not created:
-        like_obj.delete()
+    reaction_type = 'like'
+    if request.method == 'POST':
+        if request.content_type == 'application/json':
+            try:
+                body = json.loads(request.body.decode('utf-8'))
+                reaction_type = body.get('reaction_type', 'like')
+            except json.JSONDecodeError:
+                reaction_type = 'like'
+        else:
+            reaction_type = request.POST.get('reaction_type', 'like')
+    else:
+        reaction_type = request.GET.get('reaction_type', 'like')
+
+    valid_types = ['like', 'sad', 'laugh', 'dislike']
+    if reaction_type not in valid_types:
+        reaction_type = 'like'
+
+    existing = CommunityPostLike.objects.filter(post=post, user=request.user).first()
+    active_reaction = None
+
+    if existing:
+        if existing.reaction_type == reaction_type:
+            # Same reaction clicked -> untoggle
+            existing.delete()
+            active_reaction = None
+        else:
+            # Change reaction type
+            existing.reaction_type = reaction_type
+            existing.save()
+            active_reaction = reaction_type
+    else:
+        # Create new reaction
+        CommunityPostLike.objects.create(post=post, user=request.user, reaction_type=reaction_type)
+        active_reaction = reaction_type
+
+    is_ajax = (
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+        'application/json' in request.headers.get('Accept', '') or
+        request.content_type == 'application/json'
+    )
+
+    if is_ajax:
+        return JsonResponse({
+            'success': True,
+            'user_reaction': active_reaction,
+            'reactions_summary': post.reactions_summary(),
+        })
 
     next_url = request.META.get('HTTP_REFERER')
     if next_url:
         return redirect(next_url)
     return redirect('community_detail', slug=post.community.slug)
+
 

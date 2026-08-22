@@ -68,19 +68,48 @@ class CommunityPost(models.Model):
         return f'{self.title} by {self.author.username} in {self.community.name}'
 
     def likes_count(self):
-        return self.likes.count()
+        return self.likes.filter(reaction_type='like').count()
 
     def is_liked_by(self, user):
         if not user or not user.is_authenticated:
             return False
-        return self.likes.filter(user=user).exists()
+        return self.likes.filter(user=user, reaction_type='like').exists()
+
+    def get_user_reaction(self, user):
+        if not user or not user.is_authenticated:
+            return None
+        reaction = self.likes.filter(user=user).first()
+        return reaction.reaction_type if reaction else None
+
+    def reactions_summary(self):
+        counts = {
+            'like': 0,
+            'sad': 0,
+            'laugh': 0,
+            'dislike': 0,
+            'total': 0,
+        }
+        for l in self.likes.all():
+            r_type = l.reaction_type
+            if r_type in counts:
+                counts[r_type] += 1
+            counts['total'] += 1
+        return counts
 
 
 class CommunityPostLike(models.Model):
-    """Likes for posts inside a community."""
-    post       = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='likes')
-    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='community_post_likes')
-    created_at = models.DateTimeField(auto_now_add=True)
+    """Reactions (Like/Heart, Sad, Laughing, Dislike) for posts inside a community."""
+    REACTION_CHOICES = [
+        ('like', 'Like (Heart)'),
+        ('sad', 'Sad'),
+        ('laugh', 'Laughing'),
+        ('dislike', 'Dislike'),
+    ]
+
+    post          = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='likes')
+    user          = models.ForeignKey(User, on_delete=models.CASCADE, related_name='community_post_likes')
+    reaction_type = models.CharField(max_length=10, choices=REACTION_CHOICES, default='like')
+    created_at    = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'community_post_like'
@@ -88,5 +117,5 @@ class CommunityPostLike(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.user.username} liked "{self.post.title}"'
+        return f'{self.user.username} reacted "{self.reaction_type}" to "{self.post.title}"'
 
