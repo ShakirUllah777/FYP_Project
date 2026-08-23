@@ -67,6 +67,13 @@
     box-shadow: 0 2px 6px rgba(37,99,235,0.25);
   }
 
+  .post-content-text {
+    user-select: text;
+    -webkit-user-select: text;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
   .post-media-box {
     position: relative;
     border-radius: 14px;
@@ -74,13 +81,13 @@
     border: 1px solid #E2E8F0;
     margin-top: 12px;
     margin-bottom: 14px;
-    max-height: 380px;
+    max-height: 400px;
     background-color: #0F172A;
     cursor: pointer;
   }
   .post-img {
     width: 100%;
-    max-height: 380px;
+    max-height: 400px;
     object-fit: cover;
     object-position: center top;
     display: block;
@@ -89,23 +96,72 @@
   .post-media-box:hover .post-img {
     transform: scale(1.015);
   }
-  .img-expand-hint {
+  .post-media-actions {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(4px);
-    color: #ffffff;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 5;
   }
-  .post-media-box:hover .img-expand-hint {
-    opacity: 1;
+  .media-action-btn {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .media-action-btn:hover {
+    background: #2563EB;
+    color: #ffffff;
+    border-color: #2563EB;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+  }
+
+  .image-preview-wrapper {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: 180px;
+    border: 1px solid #CBD5E1;
+    display: inline-block;
+    background: #F8FAFC;
+  }
+  .image-preview-wrapper img {
+    max-height: 180px;
+    width: auto;
+    display: block;
+    object-fit: cover;
+  }
+  .btn-remove-preview {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(15, 23, 42, 0.8);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+  }
+  .btn-remove-preview:hover {
+    background: #EF4444;
   }
 
   .comm-member-item {
@@ -217,19 +273,36 @@
       {% if is_joined %}
         <div class="post-create-card">
           <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-pencil-square text-primary me-2"></i> Create a Post in {{ community.name }}</h5>
-          <form method="POST" action="{% url 'create_community_post' community.slug %}" enctype="multipart/form-data">
+          <form method="POST" action="{% url 'create_community_post' community.slug %}" enctype="multipart/form-data" id="createPostForm">
             {% csrf_token %}
             <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Post Title <span class="text-danger">*</span></label>
               {{ post_form.title }}
             </div>
             <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Description / Content <span class="text-danger">*</span></label>
               {{ post_form.content }}
             </div>
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+
+            <!-- Image upload preview container -->
+            <div id="imagePreviewBox" class="mb-3" style="display: none;">
+              <label class="form-label fw-semibold small text-muted mb-1">Attached Photo Preview</label>
+              <div>
+                <div class="image-preview-wrapper">
+                  <img id="postImagePreview" src="" alt="Selected Photo Preview">
+                  <button type="button" class="btn-remove-preview" id="btnRemoveImage" title="Remove image">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">
               <div class="flex-grow-1 max-w-sm">
+                <label class="form-label fw-semibold small text-muted mb-1"><i class="bi bi-image text-primary me-1"></i> Attach Photo <span class="text-muted font-normal">(Optional)</span></label>
                 {{ post_form.image }}
               </div>
-              <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold">
+              <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm align-self-end mt-2 mt-sm-0">
                 <i class="bi bi-send-fill me-1"></i> Post to Community
               </button>
             </div>
@@ -276,17 +349,29 @@
             </div>
             <div class="text-muted small">@{{ item.post.author.username }} &middot; {{ item.post.created_at|timesince }} ago</div>
           </div>
+
+          <!-- Copy Description Button (Icon Only) -->
+          <button type="button" class="btn btn-sm btn-light border text-secondary rounded-circle js-copy-post-btn" data-content="{{ item.post.content|escapejs }}" title="Copy description" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0;">
+            <i class="bi bi-clipboard"></i>
+          </button>
         </div>
 
         <!-- Post Content -->
         <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; line-height: 1.4;">{{ item.post.title }}</h5>
-        <p class="text-secondary style-preserve-lines mb-3" style="font-size: 0.95rem; line-height: 1.6;">{{ item.post.content }}</p>
+        <p class="text-secondary style-preserve-lines post-content-text mb-3" style="font-size: 0.95rem; line-height: 1.6;">{{ item.post.content }}</p>
 
         <!-- Post Image Media -->
         {% if item.post.image %}
-          <div class="post-media-box" onclick="openImageModal('{{ item.post.image.url }}', '{{ item.post.title|escapejs }}')">
-            <img src="{{ item.post.image.url }}" alt="{{ item.post.title }}" class="post-img">
-            <span class="img-expand-hint"><i class="bi bi-arrows-angle-expand me-1"></i> View Full Image</span>
+          <div class="post-media-box">
+            <img src="{{ item.post.image.url }}" alt="{{ item.post.title }}" class="post-img" onclick="openImageModal('{{ item.post.image.url }}', '{{ item.post.title|escapejs }}')">
+            <div class="post-media-actions">
+              <button type="button" class="media-action-btn" onclick="openImageModal('{{ item.post.image.url }}', '{{ item.post.title|escapejs }}')">
+                <i class="bi bi-arrows-angle-expand me-1"></i> View
+              </button>
+              <button type="button" class="media-action-btn" onclick="downloadPostImage('{{ item.post.image.url }}', '{{ item.post.title|slugify }}-photo.jpg')">
+                <i class="bi bi-download me-1"></i> Download Photo
+              </button>
+            </div>
           </div>
         {% endif %}
 
@@ -434,24 +519,68 @@
     <div class="modal-content border-0 bg-transparent">
       <div class="modal-body p-0 text-center position-relative">
         <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Close"></button>
-        <img id="lightboxImage" src="" class="img-fluid rounded-4 shadow-lg" style="max-height: 85vh; object-fit: contain;">
+        <img id="lightboxImage" src="" class="img-fluid rounded-4 shadow-lg" style="max-height: 80vh; object-fit: contain;">
         <div id="lightboxCaption" class="text-white mt-2 small fw-semibold"></div>
+        <div class="mt-3">
+          <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold shadow" id="lightboxDownloadBtn" onclick="downloadCurrentLightboxImage()">
+            <i class="bi bi-download me-1"></i> Download Attached Photo
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+var currentLightboxUrl = '';
+var currentLightboxFilename = 'community-photo.jpg';
+
 function openImageModal(url, caption) {
   var modalEl = document.getElementById('imageLightboxModal');
   var imgEl = document.getElementById('lightboxImage');
   var captionEl = document.getElementById('lightboxCaption');
   if (modalEl && imgEl) {
+    currentLightboxUrl = url;
+    currentLightboxFilename = (caption ? caption.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'community-post') + '-photo.jpg';
     imgEl.src = url;
     if (captionEl) captionEl.textContent = caption || '';
     var modal = new bootstrap.Modal(modalEl);
     modal.show();
   }
+}
+
+function downloadCurrentLightboxImage() {
+  if (currentLightboxUrl) {
+    downloadPostImage(currentLightboxUrl, currentLightboxFilename);
+  }
+}
+
+function downloadPostImage(url, filename) {
+  fetch(url)
+    .then(function(res) { return res.blob(); })
+    .then(function(blob) {
+      var blobUrl = window.URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = filename || 'community-photo.jpg';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        window.URL.revokeObjectURL(blobUrl);
+        a.remove();
+      }, 100);
+    })
+    .catch(function(err) {
+      console.error('Blob download error, falling back to direct link download:', err);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'community-photo.jpg';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
 }
 
 function getCsrfToken() {
@@ -470,6 +599,88 @@ function getCsrfToken() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Post Image preview handler for create post form
+  var imageInput = document.querySelector('#createPostForm input[type="file"]');
+  var previewBox = document.getElementById('imagePreviewBox');
+  var previewImg = document.getElementById('postImagePreview');
+  var removeBtn = document.getElementById('btnRemoveImage');
+
+  if (imageInput && previewBox && previewImg) {
+    imageInput.addEventListener('change', function() {
+      var file = this.files && this.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          previewBox.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewImg.src = '';
+        previewBox.style.display = 'none';
+      }
+    });
+
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function() {
+        imageInput.value = '';
+        previewImg.src = '';
+        previewBox.style.display = 'none';
+      });
+    }
+  }
+
+  // Copy Post Description Handler
+  document.addEventListener('click', function(e) {
+    var copyBtn = e.target.closest('.js-copy-post-btn');
+    if (!copyBtn) return;
+
+    var content = copyBtn.getAttribute('data-content');
+    if (!content) return;
+
+    var labelSpan = copyBtn.querySelector('.copy-label');
+    var originalHTML = copyBtn.innerHTML;
+
+    function showSuccess() {
+      copyBtn.innerHTML = '<i class="bi bi-check2 text-success" style="font-size: 1.15rem;"></i>';
+      copyBtn.setAttribute('title', 'Copied!');
+      copyBtn.classList.remove('btn-light', 'text-secondary');
+      copyBtn.classList.add('btn-success-subtle', 'border-success-subtle');
+      setTimeout(function() {
+        copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+        copyBtn.setAttribute('title', 'Copy description');
+        copyBtn.classList.add('btn-light', 'text-secondary');
+        copyBtn.classList.remove('btn-success-subtle', 'border-success-subtle');
+      }, 2000);
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(content).then(showSuccess).catch(function() {
+        fallbackCopyText(content, showSuccess);
+      });
+    } else {
+      fallbackCopyText(content, showSuccess);
+    }
+  });
+
+  function fallbackCopyText(text, callback) {
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      if (callback) callback();
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+    }
+    document.body.removeChild(textarea);
+  }
+
+  // Reaction Click Handler
   document.addEventListener('click', function(e) {
     var btn = e.target.closest('.js-react-btn');
     if (!btn) return;
@@ -558,4 +769,5 @@ function updatePostReactionUI(postId, userReaction, summary) {
 }
 </script>
 {% endblock %}
+
 
