@@ -311,14 +311,37 @@ button.ghost:hover {
     width: 100%;
     min-height: 480px;
     border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(11, 15, 26, 0.08);
   }
   .overlay-container {
     display: none;
   }
   .sign-in-container, .sign-up-container {
     width: 100%;
+    padding: 0 1.25rem;
   }
   .mobile-toggle {
     display: block;
+  }
+}
+
+@media (max-width: 576px) {
+  form.auth-form {
+    padding: 1.5rem 1rem !important;
+  }
+  .auth-form h1 {
+    font-size: 1.55rem;
+  }
+  .social-container {
+    margin: 10px 0;
+  }
+  .social-container a {
+    width: 38px;
+    height: 38px;
+  }
+  button.auth-btn {
+    padding: 12px 28px;
+    font-size: 0.9rem;
+    width: 100%;
   }
 }

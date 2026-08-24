@@ -1,15 +1,15 @@
 {% extends 'pages/base.html' %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-start mb-4">
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
   <div>
     <h3 class="fw-bold mb-1"><i class="bi bi-people-fill"></i> {{ team.name }}</h3>
     <p class="text-muted mb-0">Workspace for <a href="{% url 'post_detail' team.post.pk %}">{{ team.post.title }}</a></p>
   </div>
   {% if is_owner %}
-  <form method="POST" action="{% url 'add_member' team.pk %}" class="d-flex gap-2">
+  <form method="POST" action="{% url 'add_member' team.pk %}" class="d-flex gap-2 w-100 w-sm-auto">
     {% csrf_token %}
     <input type="text" name="username" class="form-control form-control-sm" placeholder="Add by username">
-    <button class="btn btn-outline-primary btn-sm">Add</button>
+    <button class="btn btn-outline-primary btn-sm flex-shrink-0">Add</button>
   </form>
   {% endif %}
 </div>
@@ -22,11 +22,11 @@
   {% endfor %}
 </div>
 
-<ul class="nav nav-tabs mb-3" role="tablist">
-  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-board">Task Board</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-milestones">Milestones</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files">Files</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-meetings">Meetings</button></li>
+<ul class="nav nav-tabs mb-3 flex-nowrap overflow-x-auto" role="tablist" style="-webkit-overflow-scrolling: touch;">
+  <li class="nav-item"><button class="nav-link active text-nowrap" data-bs-toggle="tab" data-bs-target="#tab-board">Task Board</button></li>
+  <li class="nav-item"><button class="nav-link text-nowrap" data-bs-toggle="tab" data-bs-target="#tab-milestones">Milestones</button></li>
+  <li class="nav-item"><button class="nav-link text-nowrap" data-bs-toggle="tab" data-bs-target="#tab-files">Files</button></li>
+  <li class="nav-item"><button class="nav-link text-nowrap" data-bs-toggle="tab" data-bs-target="#tab-meetings">Meetings</button></li>
 </ul>
 
 <div class="tab-content">
@@ -36,30 +36,30 @@
     <form method="POST" action="{% url 'add_task' team.pk %}" class="card shadow-sm mb-3 p-3">
       {% csrf_token %}
       <div class="row g-2">
-        <div class="col-md-3">{{ task_form.title }}</div>
-        <div class="col-md-3">{{ task_form.assigned_to }}</div>
-        <div class="col-md-2">{{ task_form.priority }}</div>
-        <div class="col-md-2">{{ task_form.due_date }}</div>
-        <div class="col-md-2"><button class="btn btn-primary w-100 btn-sm">Add Task</button></div>
+        <div class="col-12 col-md-3">{{ task_form.title }}</div>
+        <div class="col-6 col-md-3">{{ task_form.assigned_to }}</div>
+        <div class="col-6 col-md-2">{{ task_form.priority }}</div>
+        <div class="col-6 col-md-2">{{ task_form.due_date }}</div>
+        <div class="col-6 col-md-2"><button class="btn btn-primary w-100 btn-sm">Add Task</button></div>
       </div>
     </form>
 
-    <div class="row">
+    <div class="row g-3">
       {% for status, label in columns.items %}{% endfor %}
-      <div class="col-md-4">
-        <h6 class="fw-bold text-muted">TO DO</h6>
+      <div class="col-12 col-md-4 mb-3 mb-md-0">
+        <h6 class="fw-bold text-muted mb-2">TO DO</h6>
         {% for task in columns.todo %}
           {% include 'collaboration/_task_card.html' with task=task team=team %}
         {% empty %}<p class="text-muted small">Nothing here.</p>{% endfor %}
       </div>
-      <div class="col-md-4">
-        <h6 class="fw-bold text-muted">IN PROGRESS</h6>
+      <div class="col-12 col-md-4 mb-3 mb-md-0">
+        <h6 class="fw-bold text-muted mb-2">IN PROGRESS</h6>
         {% for task in columns.in_progress %}
           {% include 'collaboration/_task_card.html' with task=task team=team %}
         {% empty %}<p class="text-muted small">Nothing here.</p>{% endfor %}
       </div>
-      <div class="col-md-4">
-        <h6 class="fw-bold text-muted">DONE</h6>
+      <div class="col-12 col-md-4 mb-3 mb-md-0">
+        <h6 class="fw-bold text-muted mb-2">DONE</h6>
         {% for task in columns.done %}
           {% include 'collaboration/_task_card.html' with task=task team=team %}
         {% empty %}<p class="text-muted small">Nothing here.</p>{% endfor %}

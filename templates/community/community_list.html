@@ -28,9 +28,16 @@
     display: flex;
     gap: 12px;
     margin-bottom: 24px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .comm-nav-tabs::-webkit-scrollbar {
+    display: none;
   }
   .comm-nav-tabs .nav-link-item {
-    padding: 12px 20px;
+    padding: 12px 18px;
     font-weight: 600;
     font-size: 0.95rem;
     color: #64748B;
@@ -40,6 +47,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
   }
   .comm-nav-tabs .nav-link-item:hover {
     color: var(--primary-blue, #2563EB);
@@ -59,6 +67,20 @@
   .comm-nav-tabs .nav-link-item.active .badge-count {
     background: rgba(37, 99, 235, 0.12);
     color: var(--primary-blue, #2563EB);
+  }
+
+  @media (max-width: 576px) {
+    .comm-hero {
+      padding: 22px 18px !important;
+      border-radius: 16px !important;
+      margin-bottom: 20px !important;
+    }
+    .comm-hero h2 {
+      font-size: 1.55rem !important;
+    }
+    .comm-hero p {
+      font-size: 0.88rem !important;
+    }
   }
 
   .community-card {

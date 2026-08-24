@@ -22,6 +22,24 @@ setTimeout(function () {
   });
 }, 3000);
 
+// Mobile Drawer Navigation Toggle
+function toggleMobileNav() {
+  const drawer = document.getElementById('mobileNavDrawer');
+  const backdrop = document.getElementById('mobileNavBackdrop');
+  if (!drawer) return;
+
+  const isOpen = drawer.classList.contains('show');
+  if (isOpen) {
+    drawer.classList.remove('show');
+    if (backdrop) backdrop.classList.remove('show');
+    document.body.style.overflow = '';
+  } else {
+    drawer.classList.add('show');
+    if (backdrop) backdrop.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
 // Chatbot functionality
 function toggleChat() {
   const csWindow = document.getElementById('cs-window');

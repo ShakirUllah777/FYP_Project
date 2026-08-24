@@ -72,6 +72,30 @@
     color: #fff; font-weight: 700; font-size: 0.85rem; background-color: var(--sidebar-bg);
   }
   .lb-stat { font-size: 0.78rem; color: var(--ink3); white-space: nowrap; }
+
+  @media (max-width: 576px) {
+    .lb-hero {
+      padding: 20px 16px !important;
+    }
+    .lb-hero h2 {
+      font-size: 1.45rem !important;
+    }
+    .lb-podium {
+      flex-direction: column !important;
+      align-items: center !important;
+    }
+    .lb-podium-card {
+      width: 100% !important;
+      max-width: 280px !important;
+    }
+    .lb-podium-card.rank-1 { order: 1 !important; }
+    .lb-podium-card.rank-2 { order: 2 !important; }
+    .lb-podium-card.rank-3 { order: 3 !important; }
+    .lb-row {
+      padding: 10px 8px !important;
+      gap: 8px !important;
+    }
+  }
 </style>
 {% endblock %}
 {% block content %}

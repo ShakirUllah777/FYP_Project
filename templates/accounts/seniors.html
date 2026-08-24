@@ -13,38 +13,46 @@
 
 <div class="card shadow-sm mb-4">
   <div class="card-body py-3">
-    <form method="GET" class="d-flex gap-2 flex-wrap">
+    <form method="GET" class="row g-2 align-items-center">
 
-      <input type="text"
-             name="search"
-             value="{{ search }}"
-             class="form-control"
-             style="max-width:250px;"
-             placeholder="Search by name or username...">
+      <div class="col-12 col-sm-4">
+        <input type="text"
+               name="search"
+               value="{{ search }}"
+               class="form-control"
+               placeholder="Search by name or username...">
+      </div>
 
-      <select name="semester" class="form-select" style="max-width:180px;">
-        <option value="">All Semesters</option>
-        <option value="6" {% if semester == '6' %}selected{% endif %}>
-          Semester 6
-        </option>
-        <option value="7" {% if semester == '7' %}selected{% endif %}>
-          Semester 7
-        </option>
-        <option value="8" {% if semester == '8' %}selected{% endif %}>
-          Semester 8
-        </option>
-      </select>
+      <div class="col-12 col-sm-3">
+        <select name="semester" class="form-select">
+          <option value="">All Semesters</option>
+          <option value="6" {% if semester == '6' %}selected{% endif %}>
+            Semester 6
+          </option>
+          <option value="7" {% if semester == '7' %}selected{% endif %}>
+            Semester 7
+          </option>
+          <option value="8" {% if semester == '8' %}selected{% endif %}>
+            Semester 8
+          </option>
+        </select>
+      </div>
 
-      <input type="text"
-             name="batch"
-             value="{{ batch }}"
-             class="form-control"
-             style="max-width:180px;"
-             placeholder="Batch e.g. Fall 2022">
+      <div class="col-12 col-sm-3">
+        <input type="text"
+               name="batch"
+               value="{{ batch }}"
+               class="form-control"
+               placeholder="Batch e.g. Fall 2022">
+      </div>
 
-      <button type="submit" class="btn btn-primary px-4">Search</button>
+      <div class="col-6 col-sm-auto">
+        <button type="submit" class="btn btn-primary w-100 px-4">Search</button>
+      </div>
       {% if search or semester or batch %}
-        <a href="{% url 'seniors' %}" class="btn btn-outline-secondary">Clear</a>
+      <div class="col-6 col-sm-auto">
+        <a href="{% url 'seniors' %}" class="btn btn-outline-secondary w-100">Clear</a>
+      </div>
       {% endif %}
 
     </form>
