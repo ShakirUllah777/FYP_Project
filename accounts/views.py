@@ -52,7 +52,7 @@ def register(request):
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
         last_name  = request.POST.get('last_name', '').strip()
-        email      = request.POST.get('email', '').strip()
+        email      = request.POST.get('email', '').strip().lower()
         password   = request.POST.get('password', '')
         confirm    = request.POST.get('confirm_password', '')
 
@@ -154,28 +154,17 @@ def login_view(request):
     if request.method == 'POST':
         email_or_username = request.POST.get('email', '').strip()
         password          = request.POST.get('password')
-        user = None
-        try:
-            # 1. Try to authenticate directly as username
-            user = authenticate(request, username=email_or_username, password=password)
 
-            # 2. If not found, try as email
-            if not user:
-                users = User.objects.filter(email__iexact=email_or_username)
-                for u in users:
-                    authenticated_user = authenticate(request, username=u.username, password=password)
-                    if authenticated_user:
-                        user = authenticated_user
-                        break
+        user = authenticate(request, username=email_or_username, password=password)
 
-            if user:
-                login(request, user)
-                if user.is_superuser:
-                    return redirect('/admin/')
-                return redirect('tasks')
-        except Exception:
-            pass
-        messages.error(request, 'Invalid email or password.')
+        if user:
+            login(request, user)
+            if user.is_superuser:
+                return redirect('/admin/')
+            return redirect('tasks')
+        else:
+            messages.error(request, 'Invalid email or password.')
+
     return render(request, 'accounts/login.html')
 
 
