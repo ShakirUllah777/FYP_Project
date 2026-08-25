@@ -14,31 +14,34 @@ from posts.models import Post
 
 
 def _send_verification_email(user, request=None):
-    verification, _ = EmailVerification.objects.get_or_create(
-        user=user, defaults={'token': EmailVerification.generate_token()}
-    )
-    if not verification.token:
-        verification.token = EmailVerification.generate_token()
-        verification.save()
-    
-    if request:
-        domain = request.build_absolute_uri('/')[:-1]
-    else:
-        domain = getattr(settings, 'SITE_DOMAIN', 'http://127.0.0.1:8000')
+    try:
+        verification, _ = EmailVerification.objects.get_or_create(
+            user=user, defaults={'token': EmailVerification.generate_token()}
+        )
+        if not verification.token:
+            verification.token = EmailVerification.generate_token()
+            verification.save()
+        
+        if request:
+            domain = request.build_absolute_uri('/')[:-1]
+        else:
+            domain = getattr(settings, 'SITE_DOMAIN', 'http://127.0.0.1:8000')
 
-    verify_url = f"{domain}/verify-email/{verification.token}/"
-    send_mail(
-        subject='Verify your CollabSpace account',
-        message=(
-            f"Hi {user.first_name},\n\n"
-            f"Welcome to CollabSpace! Please verify your university email by opening this link:\n"
-            f"{verify_url}\n\n"
-            f"If you did not create this account, you can ignore this email."
-        ),
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@collabspace.local'),
-        recipient_list=[user.email],
-        fail_silently=False,
-    )
+        verify_url = f"{domain}/verify-email/{verification.token}/"
+        send_mail(
+            subject='Verify your CollabSpace account',
+            message=(
+                f"Hi {user.first_name},\n\n"
+                f"Welcome to CollabSpace! Please verify your university email by opening this link:\n"
+                f"{verify_url}\n\n"
+                f"If you did not create this account, you can ignore this email."
+            ),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@collabspace.local'),
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
 
 
 
