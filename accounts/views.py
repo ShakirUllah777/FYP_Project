@@ -108,10 +108,12 @@ def register(request):
             first_name=first_name,
             last_name=last_name
         )
-        Profile.objects.get_or_create(user=user)
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.is_verified = True
+        profile.save()
         _send_verification_email(user, request)
 
-        messages.success(request, 'Account created successfully! Check your email to verify your account, then login.')
+        messages.success(request, 'Account created successfully! You can now login.')
         return redirect('login')
 
     return render(request, 'accounts/register.html')
